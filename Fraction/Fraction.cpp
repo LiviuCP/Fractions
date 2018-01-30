@@ -50,42 +50,42 @@ Fraction::Fraction(int numerator, int denominator)
 Fraction::Fraction(const std::string &inputString)
 {
 	int slashIndex{ Fraction::checkFractionString(inputString) };
+	// case 1: string is not in fraction format, check if decimal/integer
 	if (static_cast<int>(FractionString::ERROR_INDEX) == slashIndex)
 	{
 		int decimalIndex{ Fraction::checkDecimalString(inputString) };
-		if (static_cast<int>(DecimalString::ERROR_INDEX) == decimalIndex)
+		switch (decimalIndex)
 		{
+		// 1a: invalid format
+		case static_cast<int>(DecimalString::ERROR_INDEX):
 			throw WrongFormatException{};
-		}
-		else if (static_cast<int>(DecimalString::NO_DECIMAL_INDEX) == decimalIndex)
-		{
+		// 1b: integer format
+		case static_cast<int>(DecimalString::NO_DECIMAL_INDEX):
 			numerator = std::stoi(inputString);
 			denominator = 1;
 			decimal = static_cast<double>(numerator);
-		}
-		else
-		{
-			double decimalNumber{ std::stod(inputString) };
+			break;
+		// 1c: decimal format
+		default:
 			int numberOfDecimals{ static_cast<int>(inputString.length()) - 1 - decimalIndex };
 			denominator = 1;
 			for (int currentDecimal{ 0 }; currentDecimal < numberOfDecimals; ++currentDecimal)
 			{
 				denominator *= 10;
 			}
-			numerator = static_cast<int>(decimalNumber*denominator);
+			numerator = static_cast<int>(std::stod(inputString) * denominator);
 			normalize();
 		}
 	}
+	// case 2: string is in fraction format
 	else
 	{
-		std::string num{ inputString.substr(0, slashIndex) };
-		std::string den{ inputString.substr(slashIndex + 1, inputString.length() - slashIndex - 1) };
-		numerator = std::stoi(num);
-		denominator = std::stoi(den);
-		if (0 == denominator)
+		denominator = std::stoi(inputString.substr(slashIndex + 1, inputString.length() - slashIndex - 1));
+		if (!denominator)
 		{
 			throw std::exception{ "Fatal error! Division by 0." };
 		}
+		numerator = std::stoi(inputString.substr(0, slashIndex));
 		normalize();
 	}
 }
