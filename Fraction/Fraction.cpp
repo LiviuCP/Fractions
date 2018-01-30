@@ -113,7 +113,7 @@ void Fraction::setNumerator(int num)
 
 void Fraction::setDenominator(int den)
 {
-	if (den == 0)
+	if (!den)
 	{
 		throw std::exception{ "Fatal error! Division by 0." };
 	}
