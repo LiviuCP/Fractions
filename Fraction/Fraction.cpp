@@ -580,8 +580,8 @@ void Fraction::normalize()
 	}
 	if (denominator<0)
 	{
-		numerator = numerator*(-1);
-		denominator = denominator*(-1);
+		numerator = -numerator;
+		denominator = -denominator;
 	}
 	decimal = static_cast<double>(numerator) / denominator;
 }
