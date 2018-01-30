@@ -38,7 +38,7 @@ Fraction::Fraction(double decimalNumber) : denominator{1}
 
 Fraction::Fraction(int numerator, int denominator)
 {
-	if (0 == denominator)
+	if (!denominator)
 	{
 		throw std::exception{ "Fatal error! Division by 0." };
 	}
