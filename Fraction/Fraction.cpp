@@ -21,17 +21,16 @@ Fraction::Fraction(int integerNumber) : numerator{integerNumber}, denominator{1}
 {
 }
 
-Fraction::Fraction(double decimalNumber)
+Fraction::Fraction(double decimalNumber) : denominator{1}
 {
-	std::ostringstream writeDecimal;
-	writeDecimal << decimalNumber;
-	std::string decimalString = writeDecimal.str();
-	int commaPosition = decimalString.find('.');
-	int numberOfDecimals = decimalString.length() - 1 - commaPosition;
-	denominator = 1;
-	for (int currentDecimal = 0; currentDecimal<numberOfDecimals; ++currentDecimal)
+	std::ostringstream decimalOutput;
+	decimalOutput << decimalNumber;
+	std::string decimalString{ decimalOutput.str() };
+	int commaPosition{ static_cast<int> (decimalString.find('.')) };
+	int numberOfDecimals{ static_cast<int>(decimalString.length()) - 1 - commaPosition };
+	for (int currentDecimal{ 0 }; currentDecimal < numberOfDecimals; ++currentDecimal)
 	{
-		denominator = denominator * 10;
+		denominator *= 10;
 	}
 	numerator = static_cast<int>(decimalNumber*denominator);
 	normalize();
