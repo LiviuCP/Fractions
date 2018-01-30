@@ -530,11 +530,11 @@ Fraction& Fraction::operator--()
 
 Fraction Fraction::inverse()
 {
-	if (numerator == 0)
+	if (!numerator)
 	{
 		throw std::exception{ "Error! Division by 0" };
 	}
-	return Fraction(denominator, numerator);
+	return Fraction{ denominator, numerator };
 }
 
 std::istream& operator >> (std::istream& inputStream, Fraction& fraction)
