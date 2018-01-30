@@ -329,9 +329,7 @@ Fraction Fraction::operator-(const Fraction& secondFraction)
 
 Fraction Fraction::operator*(const Fraction& secondFraction)
 {
-	int resultNumerator = numerator*secondFraction.numerator;
-	int resultDenominator = denominator*secondFraction.denominator;
-	return Fraction{ resultNumerator, resultDenominator };
+	return Fraction{ numerator*secondFraction.numerator, denominator*secondFraction.denominator };
 }
 
 Fraction Fraction::operator/(const Fraction& secondFraction)
