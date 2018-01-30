@@ -318,11 +318,11 @@ Fraction Fraction::operator+(const Fraction& secondFraction)
 
 Fraction Fraction::operator-(const Fraction& secondFraction)
 {
-	int gcd = greatestCommonDivisor(abs(denominator), abs(secondFraction.denominator));
-	int multiplyFactor = secondFraction.denominator / gcd;
-	int secondMultiplyFactor = denominator / gcd;
-	int resultNumerator = numerator*multiplyFactor - secondFraction.numerator*secondMultiplyFactor;
-	int resultDenominator = multiplyFactor*denominator;
+	int gcd{ greatestCommonDivisor(abs(denominator), abs(secondFraction.denominator)) };
+	int multiplyFactor{ secondFraction.denominator / gcd };
+	int secondMultiplyFactor{ denominator / gcd };
+	int resultNumerator{ numerator*multiplyFactor - secondFraction.numerator*secondMultiplyFactor };
+	int resultDenominator{ multiplyFactor*denominator };
 	return Fraction{ resultNumerator, resultDenominator };
 }
 
