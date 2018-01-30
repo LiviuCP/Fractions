@@ -419,21 +419,16 @@ Fraction operator/(const char* inputString, const Fraction &secondFraction)
 
 Fraction Fraction::operator^(int n)
 {
-	Fraction multiplier;
+	Fraction multiplier{ *this };
 	Fraction result(1);
 	if (n<0)
 	{
 		multiplier = inverse();
-		n = n*(-1);
+		n = -n;
 	}
-	else
-	{
-		multiplier = *this;
-	}
-	while (n>0)
+	while (0 < n--)
 	{
 		result = result*multiplier;
-		--n;
 	}
 	return result;
 }
