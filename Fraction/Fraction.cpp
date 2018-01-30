@@ -334,9 +334,7 @@ Fraction Fraction::operator*(const Fraction& secondFraction)
 
 Fraction Fraction::operator/(const Fraction& secondFraction)
 {
-	int resultNumerator = numerator*secondFraction.denominator;
-	int resultDenominator = denominator*secondFraction.numerator;
-	return Fraction{ resultNumerator, resultDenominator };
+	return Fraction{ numerator*secondFraction.denominator, denominator*secondFraction.numerator };
 }
 
 Fraction Fraction::operator+(const std::string& inputString)
