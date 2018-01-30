@@ -688,31 +688,35 @@ int Fraction::checkDecimalString(const std::string &decimalString)
 
 int Fraction::greatestCommonDivisor(int firstNumber, int secondNumber)
 {
-	if (firstNumber == 0 && secondNumber == 0)
+	// assume numbers are prime between each other (so variable is initialized)
+	int gcd{ 1 };
+	// gcd is undefined if both numbers are 0
+	if (!firstNumber && !secondNumber)
 	{
 		throw std::exception{ "Error! Cannot retrieve greatest common divisor of two 0 numbers" };
 	}
-	if (firstNumber == 0)
+	// if one of the numbers is 0, the other is the gcd
+	else if (!firstNumber)
 	{
-		return abs(secondNumber);
+		gcd = abs(secondNumber);
 	}
-	if (secondNumber == 0)
+	else if (!secondNumber)
 	{
-		return abs(firstNumber);
+		gcd = abs(firstNumber);
 	}
-	firstNumber = abs(firstNumber);
-	secondNumber = abs(secondNumber);
-	while (1)
+	// if both are different from 0, then gcd needs to be calculated using the remainder method
+	else
 	{
-		int remainder{ firstNumber%secondNumber };
-		if (remainder == 0)
-		{
-			return secondNumber;
-		}
-		else
+		firstNumber = abs(firstNumber);
+		secondNumber = abs(secondNumber);
+		int remainder{ firstNumber % secondNumber };
+		while (remainder)
 		{
 			firstNumber = secondNumber;
 			secondNumber = remainder;
+			remainder = firstNumber % secondNumber;
 		}
+		gcd = secondNumber;
 	}
+	return gcd;
 }
