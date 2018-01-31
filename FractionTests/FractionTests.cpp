@@ -151,26 +151,6 @@ TEST(checkFractionFormat, checkFormatIsIncorrect)
 
 /* Test the normalize() function */
 
-TEST(normalizeFunction, singleFraction)
-{
-	Fraction a{ "3/6" };
-	EXPECT_EQ(a.getNumerator(), 1);
-	EXPECT_EQ(a.getDenominator(), 2);
-	EXPECT_EQ(a.getDecimal(), 0.5);
-	Fraction b{ "-3/6" };
-	EXPECT_EQ(b.getNumerator(), -1);
-	EXPECT_EQ(b.getDenominator(), 2);
-	EXPECT_EQ(b.getDecimal(), -0.5);
-	Fraction c{ "3/-6" };
-	EXPECT_EQ(c.getNumerator(), -1);
-	EXPECT_EQ(c.getDenominator(), 2);
-	EXPECT_EQ(c.getDecimal(), -0.5);
-	Fraction d{ "-3/-6" };
-	EXPECT_EQ(d.getNumerator(), 1);
-	EXPECT_EQ(d.getDenominator(), 2);
-	EXPECT_EQ(d.getDecimal(), 0.5);
-}
-
 TEST(normalizeFunction, twoFractions)
 {
 	Fraction a{ "2/5" };
