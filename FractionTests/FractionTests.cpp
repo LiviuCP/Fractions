@@ -462,7 +462,7 @@ TEST(arithmeticOperators, powerEqual)
 	EXPECT_EQ(fract, fractCopy);
 }
 
-TEST(unaryOperators, plusplus)
+TEST(unaryOperators, plusPlus)
 {
 	Fraction fract1{ "1/2" };
 	Fraction fract2{ fract1 };
