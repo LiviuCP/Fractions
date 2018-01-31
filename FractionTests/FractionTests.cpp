@@ -223,6 +223,17 @@ TEST(greatestCommonDivisor, correctOutput)
 	EXPECT_EQ(Fraction::greatestCommonDivisor(-10, -10), 10);
 }
 
+/* Test the constructors */
+
+TEST(constructors, defaultConstructor)
+{
+	Fraction fract{};
+	double decimal{ 0.0 };
+	EXPECT_EQ(0, fract.getNumerator());
+	EXPECT_EQ(1, fract.getDenominator());
+	EXPECT_EQ(decimal, fract.getDecimal());
+}
+
 /* Test the equivalent fractions concept */
 
 TEST(equivalentFractions, equivalentFractionsInteger)
