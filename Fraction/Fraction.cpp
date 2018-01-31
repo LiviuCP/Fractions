@@ -131,6 +131,11 @@ Fraction& Fraction::operator=(int intNumber)
 	return(*this = Fraction{ intNumber });
 }
 
+Fraction& Fraction::operator=(double decimalNumber)
+{
+	return(*this = Fraction{ decimalNumber });
+}
+
 Fraction& Fraction::operator=(const char* inputString)
 {
 	return (*this = std::string{ inputString });

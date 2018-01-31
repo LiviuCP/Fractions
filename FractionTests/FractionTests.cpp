@@ -535,6 +535,15 @@ TEST(assignmentOperators, chainingFractionsIntegers)
 	EXPECT_EQ(fract2, "4/1");
 }
 
+TEST(assignmentOperators, chainingFractionsDecimals)
+{
+	Fraction fract1{ "1/2" };
+	Fraction fract2{ "4/5" };
+	fract1 = fract2 = 1.6;
+	EXPECT_EQ(fract1, fract2);
+	EXPECT_EQ(fract2, "8/5");
+}
+
 TEST(assignmentOperators, stringObjects)
 {
 	Fraction fract1{ "1/4" };
@@ -557,6 +566,14 @@ TEST(assignmentOperators, integers)
 	Fraction fract1{ "4/1" };
 	Fraction fract2{ "2/3" };
 	fract2 = 4;
+	EXPECT_EQ(fract1, fract2);
+}
+
+TEST(assignmentOperators, decimals)
+{
+	Fraction fract1{ "8/5" };
+	Fraction fract2{ "2/3" };
+	fract2 = 1.6;
 	EXPECT_EQ(fract1, fract2);
 }
 
