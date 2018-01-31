@@ -234,6 +234,20 @@ TEST(constructors, defaultConstructor)
 	EXPECT_EQ(decimal, fract.getDecimal());
 }
 
+TEST(constructors, numConstructor)
+{
+	Fraction fract1{ 3 };
+	double decimal1{ 3.0 };
+	EXPECT_EQ(3, fract1.getNumerator());
+	EXPECT_EQ(1, fract1.getDenominator());
+	EXPECT_EQ(decimal1, fract1.getDecimal());
+	Fraction fract2{ -3 };
+	double decimal2{ -3.0 };
+	EXPECT_EQ(-3, fract2.getNumerator());
+	EXPECT_EQ(1, fract2.getDenominator());
+	EXPECT_EQ(decimal2, fract2.getDecimal());
+}
+
 /* Test the equivalent fractions concept */
 
 TEST(equivalentFractions, equivalentFractionsInteger)
