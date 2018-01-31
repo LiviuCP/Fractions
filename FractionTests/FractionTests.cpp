@@ -490,6 +490,59 @@ TEST(unaryOperators, minusminus)
 	EXPECT_EQ(fract1, "5/2");
 }
 
+/* Test the assignment operators */
+
+TEST(assignmentOperators, chainingFractions)
+{
+	// should work fine, it's the default operator
+	Fraction fract1{ "1/2" };
+	Fraction fract2{ "4/5" };
+	Fraction fract3{ "5/6" };
+	fract1 = fract2 = fract3;
+	EXPECT_EQ(fract1, fract3);
+	EXPECT_EQ(fract2, fract3);
+	EXPECT_EQ(fract1, "5/6");
+}
+
+TEST(assignmentOperators, chainingFractionsStrings)
+{
+	Fraction fract1{ "1/2" };
+	Fraction  fract2{ "4/5" };
+	std::string fract3{ "5/6" };
+	// chaining goes from right to left so first 2 operands must be fractions (cannot assign fraction to string)
+	fract1 = fract2 = fract3;
+	EXPECT_EQ(fract1, fract3);
+	EXPECT_EQ(fract2, fract3);
+	EXPECT_EQ(fract1, "5/6");
+}
+
+TEST(assignmentOperators, chainingFractionsChars)
+{
+	Fraction fract1{ "1/2" };
+	Fraction  fract2{ "4/5" };
+	// chaining goes from right to left so first 2 operands must be fractions (cannot assign fraction to char*)
+	fract1 = fract2 = "5/6";
+	EXPECT_EQ(fract1, fract2);
+	EXPECT_EQ(fract2, "5/6");
+}
+
+TEST(assignmentOperators, stringObjects)
+{
+	Fraction fract1{ "1/4" };
+	Fraction fract2{ "2/3" };
+	std::string fract3{ "2/8" };
+	fract2 = fract3;
+	EXPECT_EQ(fract1, fract2);
+}
+
+TEST(assignmentOperators, cStrings)
+{
+	Fraction fract1{ "1/4" };
+	Fraction fract2{ "2/3" };
+	fract2 = "3/12";
+	EXPECT_EQ(fract1, fract2);
+}
+
 /* Test the logical operators */
 
 TEST(compareOperators, greater)
