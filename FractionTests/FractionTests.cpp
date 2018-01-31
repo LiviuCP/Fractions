@@ -248,6 +248,30 @@ TEST(constructors, numConstructor)
 	EXPECT_EQ(decimal2, fract2.getDecimal());
 }
 
+TEST(constructors, numDenConstructor)
+{
+	Fraction fract1{ 8, 10 };
+	double decimal1{ static_cast<double>(4) / 5 };
+	EXPECT_EQ(4, fract1.getNumerator());
+	EXPECT_EQ(5, fract1.getDenominator());
+	EXPECT_EQ(decimal1, fract1.getDecimal());
+	Fraction fract2{ -8, 10 };
+	double decimal2{ static_cast<double>(-4) / 5 };
+	EXPECT_EQ(-4, fract2.getNumerator());
+	EXPECT_EQ(5, fract2.getDenominator());
+	EXPECT_EQ(decimal2, fract2.getDecimal());
+	Fraction fract3{ 8, -10 };
+	double decimal3{ static_cast<double>(-4) / 5 };
+	EXPECT_EQ(-4, fract3.getNumerator());
+	EXPECT_EQ(5, fract3.getDenominator());
+	EXPECT_EQ(decimal3, fract3.getDecimal());
+	Fraction fract4{ -8, -10 };
+	double decimal4{ static_cast<double>(4) / 5 };
+	EXPECT_EQ(4, fract4.getNumerator());
+	EXPECT_EQ(5, fract4.getDenominator());
+	EXPECT_EQ(decimal4, fract4.getDecimal());
+}
+
 /* Test the equivalent fractions concept */
 
 TEST(equivalentFractions, equivalentFractionsInteger)
