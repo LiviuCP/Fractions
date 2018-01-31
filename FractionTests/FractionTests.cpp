@@ -476,7 +476,7 @@ TEST(unaryOperators, plusPlus)
 	EXPECT_EQ(fract1, "1/2");
 }
 
-TEST(unaryOperators, minusminus)
+TEST(unaryOperators, minusMinus)
 {
 	Fraction fract1{ "5/2" };
 	Fraction fract2{ fract1 };
