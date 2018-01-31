@@ -30,8 +30,8 @@ class Fraction
 public:
 	// constructors
 	Fraction(void);
-	Fraction(int);
 	Fraction(double);
+	explicit Fraction(int);
 	Fraction(int, int);
 	explicit Fraction(const std::string&);
 	// getters
@@ -118,6 +118,7 @@ public:
 	bool isSmallerThanUnit();
 	bool isUnit();
 	// assignment operators
+	Fraction& operator=(int);
 	Fraction& operator=(const char*);
 	Fraction& operator=(const std::string&);
 	// IO operators

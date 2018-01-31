@@ -126,6 +126,11 @@ void Fraction::setDecimal(double dec)
 	*this = Fraction{ dec };
 }
 
+Fraction& Fraction::operator=(int intNumber)
+{
+	return(*this = Fraction{ intNumber });
+}
+
 Fraction& Fraction::operator=(const char* inputString)
 {
 	return (*this = std::string{ inputString });
