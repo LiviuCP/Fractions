@@ -1,4 +1,4 @@
-#include "Fraction.h"
+#include "fraction.h"
 #include <sstream>
 #include <cmath>
 #include <cctype>
