@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <fstream>
-#include <exception>
+#include <stdexcept>
 
 enum class FractionString
 {

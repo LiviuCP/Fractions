@@ -4,15 +4,6 @@
 #include <cctype>
 #include <algorithm>
 
-WrongFormatException::WrongFormatException() : wrongFormatException{ "Error! Wrong fraction format" }
-{
-}
-
-std::string WrongFormatException::what()
-{
-	return wrongFormatException.what();
-}
-
 Fraction::Fraction(void) : numerator{0}, denominator{1}, decimal{0.0}
 {
 }
@@ -40,7 +31,7 @@ Fraction::Fraction(int numerator, int denominator)
 {
 	if (!denominator)
 	{
-		throw std::exception{ "Fatal error! Division by 0." };
+        throw std::runtime_error{ "Fatal error! Division by 0." };
 	}
 	this->numerator = numerator;
 	this->denominator = denominator;
@@ -58,7 +49,7 @@ Fraction::Fraction(const std::string &inputString)
 		{
 		// 1a: invalid format
 		case static_cast<int>(DecimalString::ERROR_INDEX):
-			throw WrongFormatException{};
+            throw std::runtime_error{"Error! Wrong fraction format"};
 		// 1b: integer format
 		case static_cast<int>(DecimalString::NO_DECIMAL_INDEX):
 			numerator = std::stoi(inputString);
@@ -83,7 +74,7 @@ Fraction::Fraction(const std::string &inputString)
 		denominator = std::stoi(inputString.substr(slashIndex + 1, inputString.length() - slashIndex - 1));
 		if (!denominator)
 		{
-			throw std::exception{ "Fatal error! Division by 0." };
+            throw std::runtime_error{ "Fatal error! Division by 0." };
 		}
 		numerator = std::stoi(inputString.substr(0, slashIndex));
 		normalize();
@@ -115,7 +106,7 @@ void Fraction::setDenominator(int den)
 {
 	if (!den)
 	{
-		throw std::exception{ "Fatal error! Division by 0." };
+        throw std::runtime_error{ "Fatal error! Division by 0." };
 	}
 	denominator = den;
 	normalize();
@@ -541,7 +532,7 @@ Fraction Fraction::inverse()
 {
 	if (!numerator)
 	{
-		throw std::exception{ "Error! Division by 0" };
+        throw std::runtime_error{ "Error! Division by 0" };
 	}
 	return Fraction{ denominator, numerator };
 }
@@ -702,7 +693,7 @@ int Fraction::greatestCommonDivisor(int firstNumber, int secondNumber)
 	// gcd is undefined if both numbers are 0
 	if (!firstNumber && !secondNumber)
 	{
-		throw std::exception{ "Error! Cannot retrieve greatest common divisor of two 0 numbers" };
+        throw std::runtime_error{ "Error! Cannot retrieve greatest common divisor of two 0 numbers" };
 	}
 	// if one of the numbers is 0, the other is the gcd
 	else if (!firstNumber)
