@@ -1,4 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    FractionLib
+    FractionLib \
+    FractionTests
+
+FractionTests.depends = FractionLib
