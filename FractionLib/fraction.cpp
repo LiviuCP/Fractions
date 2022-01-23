@@ -590,8 +590,8 @@ int Fraction::checkFractionString(const std::string &fractionString)
 {
 	int slashIndex{ static_cast<int>(fractionString.find_first_of('/')) };
 	// calculate specific parameters of the fraction string (e.g. number of minus characters)
-	int minusCount{ std::count(fractionString.begin(), fractionString.end(), '-') };
-	int slashCount{ std::count(fractionString.begin(), fractionString.end(), '/') };
+    auto minusCount{ std::count(fractionString.begin(), fractionString.end(), '-') };
+    auto slashCount{ std::count(fractionString.begin(), fractionString.end(), '/') };
 	int nonDigitCount{ 0 };
 	for (std::string::const_iterator it{ fractionString.cbegin() }; it != fractionString.cend(); ++it)
 	{
@@ -642,8 +642,8 @@ int Fraction::checkDecimalString(const std::string &decimalString)
 	// assume the string is an integer
 	int decimalIndex{ static_cast<int>(DecimalString::NO_DECIMAL_INDEX) };
 	// calculate specific parameters of the fraction string (e.g. number of minus characters)
-	int dotCount{ std::count(decimalString.begin(), decimalString.end(), '.') };
-	int minusCount{ std::count(decimalString.begin(), decimalString.end(), '-') };
+    auto dotCount{ std::count(decimalString.begin(), decimalString.end(), '.') };
+    auto minusCount{ std::count(decimalString.begin(), decimalString.end(), '-') };
 	int nonDigitCount{ 0 };
 	for (std::string::const_iterator it{ decimalString.cbegin() }; it != decimalString.cend(); ++it)
 	{
