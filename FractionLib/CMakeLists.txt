@@ -6,14 +6,14 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(SYS_FUNC_LIB_TYPE SHARED)
+set(FRACTION_LIB_TYPE SHARED)
 
 # errors were encountered when building some libraries as shared on Windows so it has been decided to keep it static on this OS for the moment
 if(WIN32)
-    set(SYS_FUNC_LIB_TYPE STATIC)
+    set(FRACTION_LIB_TYPE STATIC)
 endif()
 
-add_library(FractionLib ${SYS_FUNC_LIB_TYPE}
+add_library(FractionLib ${FRACTION_LIB_TYPE}
     fractionlib.cpp
     fraction.cpp
 )
