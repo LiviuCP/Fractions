@@ -1,722 +1,843 @@
-#include "fraction.h"
 #include <sstream>
 #include <cmath>
 #include <cctype>
+#include <cassert>
 #include <algorithm>
 
-Fraction::Fraction(void) : numerator{0}, denominator{1}, decimal{0.0}
+#include "fraction.h"
+
+static constexpr int scDigitMultiplier{10};
+
+Fraction::Fraction()
+    : mNumerator{0}
+    , mDenominator{1}
+    , mDecimalValue{0.0}
 {
 }
 
-Fraction::Fraction(int integerNumber) : numerator{integerNumber}, denominator{1}, decimal{ static_cast<double>(integerNumber) }
+Fraction::Fraction(int numerator)
+    : mNumerator{numerator}
+    , mDenominator{1}
+    , mDecimalValue{ static_cast<double>(numerator) }
 {
 }
 
-Fraction::Fraction(double decimalNumber) : denominator{1}
+Fraction::Fraction(double decimalValue)
+    : mDenominator{1}
 {
-	std::ostringstream decimalOutput;
-	decimalOutput << decimalNumber;
-	std::string decimalString{ decimalOutput.str() };
-	int commaPosition{ static_cast<int> (decimalString.find('.')) };
-	int numberOfDecimals{ static_cast<int>(decimalString.length()) - 1 - commaPosition };
-	for (int currentDecimal{ 0 }; currentDecimal < numberOfDecimals; ++currentDecimal)
+    std::ostringstream decimalStream;
+    decimalStream << decimalValue;
+
+    const std::string cDecimalString{decimalStream.str()};
+    const size_t cCommaIndex{cDecimalString.find('.')};
+    const size_t cDecimalsCount{cCommaIndex != std::string::npos ? cDecimalString.size() - 1 - cCommaIndex : 0u};
+
+    for (size_t currentDecimal{0u}; currentDecimal < cDecimalsCount; ++currentDecimal)
 	{
-		denominator *= 10;
+        mDenominator *= scDigitMultiplier;
 	}
-	numerator = static_cast<int>(decimalNumber*denominator);
-	normalize();
+
+    mNumerator = static_cast<int>(decimalValue * mDenominator);
+
+    normalize();
 }
 
 Fraction::Fraction(int numerator, int denominator)
+    : Fraction{}
 {
-	if (!denominator)
-	{
+    if (0 != denominator)
+    {
+        mNumerator = numerator;
+        mDenominator = denominator;
+
+        normalize();
+    }
+    else
+    {
         throw std::runtime_error{ "Fatal error! Division by 0." };
 	}
-	this->numerator = numerator;
-	this->denominator = denominator;
-	normalize();
 }
 
-Fraction::Fraction(const std::string &inputString)
+Fraction::Fraction(const std::string& fractionString)
+    : Fraction{}
 {
-	int slashIndex{ Fraction::checkFractionString(inputString) };
-	// case 1: string is not in fraction format, check if decimal/integer
-	if (static_cast<int>(FractionString::ERROR_INDEX) == slashIndex)
+    const int slashIndex{Fraction::parseFractionString(fractionString)};
+
+    /* Two main scenarios:
+       - string is not in fraction format, check if decimal/integer
+       - string is in fraction format
+    */
+    if (static_cast<int>(FractionStringIndexes::ERROR) == slashIndex)
 	{
-		int decimalIndex{ Fraction::checkDecimalString(inputString) };
-		switch (decimalIndex)
+        const int decimalIndex{Fraction::parseDecimalString(fractionString)};
+
+        switch (decimalIndex)
 		{
-		// 1a: invalid format
-		case static_cast<int>(DecimalString::ERROR_INDEX):
+        case static_cast<int>(DecimalStringIndexes::INVALID):
             throw std::runtime_error{"Error! Wrong fraction format"};
-		// 1b: integer format
-		case static_cast<int>(DecimalString::NO_DECIMAL_INDEX):
-			numerator = std::stoi(inputString);
-			denominator = 1;
-			decimal = static_cast<double>(numerator);
+            break;
+        case static_cast<int>(DecimalStringIndexes::INTEGER):
+            mNumerator = std::stoi(fractionString);
+            mDecimalValue = static_cast<double>(mNumerator);
 			break;
-		// 1c: decimal format
-		default:
-			int numberOfDecimals{ static_cast<int>(inputString.length()) - 1 - decimalIndex };
-			denominator = 1;
-			for (int currentDecimal{ 0 }; currentDecimal < numberOfDecimals; ++currentDecimal)
+        default:
+            int numberOfDecimals{ static_cast<int>(fractionString.length()) - 1 - decimalIndex };
+
+            for (int currentDecimal{ 0 }; currentDecimal < numberOfDecimals; ++currentDecimal)
 			{
-				denominator *= 10;
+                mDenominator *= scDigitMultiplier;
 			}
-			numerator = static_cast<int>(std::stod(inputString) * denominator);
+
+            mNumerator = static_cast<int>(std::stod(fractionString) * mDenominator);
 			normalize();
 		}
 	}
-	// case 2: string is in fraction format
-	else
+    else
 	{
-		denominator = std::stoi(inputString.substr(slashIndex + 1, inputString.length() - slashIndex - 1));
-		if (!denominator)
+        mDenominator = std::stoi(fractionString.substr(slashIndex + 1, fractionString.length() - slashIndex - 1));
+
+        if (!mDenominator)
 		{
             throw std::runtime_error{ "Fatal error! Division by 0." };
 		}
-		numerator = std::stoi(inputString.substr(0, slashIndex));
+
+        mNumerator = std::stoi(fractionString.substr(0, slashIndex));
 		normalize();
 	}
 }
 
+Fraction& Fraction::operator=(int fractionString)
+{
+    *this = Fraction{fractionString};
+    return *this;
+}
+
+Fraction& Fraction::operator=(double decimalValue)
+{
+    *this = Fraction{decimalValue};
+    return *this;
+}
+
+Fraction& Fraction::operator=(const std::string& fractionString)
+{
+    *this = Fraction{fractionString};
+    return *this;
+}
+
+Fraction& Fraction::operator=(const char* fractionString)
+{
+    *this = Fraction{fractionString};
+    return *this;
+}
+
+void Fraction::setNumerator(int numerator)
+{
+    mNumerator = numerator;
+    normalize();
+}
+
 int Fraction::getNumerator() const
 {
-	return numerator;
+    return mNumerator;
+}
+
+void Fraction::setDenominator(int denominator)
+{
+    if (denominator != 0)
+    {
+        mDenominator = denominator;
+        normalize();
+    }
+    else
+    {
+        throw std::runtime_error{ "Fatal error! Division by 0." };
+    }
 }
 
 int Fraction::getDenominator() const
 {
-	return denominator;
+    return mDenominator;
 }
 
-double Fraction::getDecimal() const
+void Fraction::setDecimalValue(double decimalValue)
 {
-	return decimal;
+    *this = Fraction{decimalValue};
 }
 
-void Fraction::setNumerator(int num)
+double Fraction::getDecimalValue() const
 {
-	numerator = num;
-	normalize();
+    return mDecimalValue;
 }
 
-void Fraction::setDenominator(int den)
+Fraction Fraction::operator+(const Fraction& fraction)
 {
-	if (!den)
-	{
-        throw std::runtime_error{ "Fatal error! Division by 0." };
-	}
-	denominator = den;
-	normalize();
+    const Fraction cResult{add(fraction, Sign::Plus)};
+    return cResult;
 }
 
-void Fraction::setDecimal(double dec)
+Fraction Fraction::operator+(const std::string& fractionString)
 {
-	*this = Fraction{ dec };
+    const Fraction cResult{add(Fraction{fractionString}, Sign::Plus)};
+    return cResult;
 }
 
-Fraction& Fraction::operator=(int intNumber)
+Fraction operator+(const std::string& fractionString, const Fraction& fraction)
 {
-	return(*this = Fraction{ intNumber });
+    const Fraction cResult{Fraction{fractionString}.add(fraction, Fraction::Sign::Plus)};
+    return cResult;
 }
 
-Fraction& Fraction::operator=(double decimalNumber)
+Fraction Fraction::operator+(const char* fractionString)
 {
-	return(*this = Fraction{ decimalNumber });
+    const Fraction cResult{add(Fraction{fractionString}, Sign::Plus)};
+    return cResult;
 }
 
-Fraction& Fraction::operator=(const char* inputString)
+Fraction operator+(const char* fractionString, const Fraction& fraction)
 {
-	return (*this = std::string{ inputString });
+    const Fraction cResult{Fraction{fractionString}.add(fraction, Fraction::Sign::Plus)};
+    return cResult;
 }
 
-Fraction& Fraction::operator=(const std::string &inputString)
+Fraction Fraction::operator-(const Fraction& fraction)
 {
-	return (*this = Fraction{ inputString });
+    const Fraction cResult{add(fraction, Sign::Minus)};
+    return cResult;
 }
 
-bool Fraction::operator<(const Fraction &secondFraction) const
+Fraction Fraction::operator-(const std::string& fractionString)
 {
-	return (numerator*secondFraction.denominator < secondFraction.numerator*denominator);
+    const Fraction cResult{add(Fraction{fractionString}, Sign::Minus)};
+    return cResult;
 }
 
-bool Fraction::operator<(const std::string& inputString) const
+Fraction operator-(const std::string& fractionString, const Fraction& fraction)
 {
-	return (*this < Fraction{ inputString });
+    const Fraction cResult{Fraction{fractionString}.add(fraction, Fraction::Sign::Minus)};
+    return cResult;
 }
 
-bool Fraction::operator<(const char* inputString) const
+Fraction Fraction::operator-(const char* fractionString)
 {
-	return(*this < std::string{ inputString });
+    const Fraction cResult{add(Fraction{fractionString}, Sign::Minus)};
+    return cResult;
 }
 
-bool operator<(const char* inputString, const Fraction &secondFraction)
+Fraction operator-(const char* fractionString, const Fraction& fraction)
 {
-	return (Fraction(std::string{ inputString }) < secondFraction);
+    const Fraction cResult{Fraction{fractionString}.add(fraction, Fraction::Sign::Minus)};
+    return cResult;
 }
 
-bool operator<(const std::string &inputString, const Fraction &secondFraction)
+Fraction Fraction::operator*(const Fraction& fraction)
 {
-	return (Fraction{ inputString } < secondFraction);
+    const Fraction cResult{multiply(fraction)};
+    return cResult;
 }
 
-bool Fraction::operator<=(const Fraction &secondFraction) const
+Fraction Fraction::operator*(const std::string& fractionString)
 {
-	return (numerator*secondFraction.denominator <= secondFraction.numerator*denominator);
+    const Fraction cResult{multiply(Fraction{fractionString})};
+    return cResult;
 }
 
-bool Fraction::operator<=(const std::string& inputString) const
+Fraction operator*(const std::string& fractionString, const Fraction& fraction)
 {
-	return (*this <= Fraction{ inputString });
+    const Fraction cResult{Fraction{fractionString}.multiply(fraction)};
+    return cResult;
 }
 
-bool Fraction::operator<=(const char* inputString) const
+Fraction Fraction::operator*(const char* fractionString)
 {
-	return(*this <= std::string{ inputString });
+    const Fraction cResult{multiply(Fraction{fractionString})};
+    return cResult;
 }
 
-bool operator<=(const char* inputString, const Fraction &secondFraction)
+Fraction operator*(const char* fractionString, const Fraction& fraction)
 {
-	return (Fraction(std::string{ inputString }) <= secondFraction);
+    const Fraction cResult{Fraction{fractionString}.multiply(fraction)};
+    return cResult;
 }
 
-bool operator<=(const std::string &inputString, const Fraction &secondFraction)
+Fraction Fraction::operator/(const Fraction& fraction)
 {
-	return (Fraction{ inputString } <= secondFraction);
+    const Fraction cResult{divide(fraction)};
+    return cResult;
 }
 
-bool Fraction::operator>(const Fraction &secondFraction) const
+Fraction Fraction::operator/(const std::string& fractionString)
 {
-	return (numerator*secondFraction.denominator > secondFraction.numerator*denominator);
+    const Fraction cResult{divide(Fraction{fractionString})};
+    return cResult;
 }
 
-bool Fraction::operator>(const std::string& inputString) const
+Fraction operator/(const std::string& fractionString, const Fraction& fraction)
 {
-	return (*this > Fraction{ inputString });
+    const Fraction cResult{Fraction{fractionString}.divide(fraction)};
+    return cResult;
 }
 
-bool Fraction::operator>(const char* inputString) const
+Fraction Fraction::operator/(const char* fractionString)
 {
-	return(*this > std::string{ inputString });
+    const Fraction cResult{divide(Fraction{fractionString})};
+    return cResult;
 }
 
-bool operator>(const char* inputString, const Fraction &secondFraction)
+Fraction operator/(const char* fractionString, const Fraction& fraction)
 {
-	return (Fraction(std::string{ inputString }) > secondFraction);
+    const Fraction cResult{Fraction{fractionString}.divide(fraction)};
+    return cResult;
 }
 
-bool operator>(const std::string &inputString, const Fraction &secondFraction)
+Fraction Fraction::operator^(int power)
 {
-	return (Fraction{ inputString } > secondFraction);
-}
-
-bool Fraction::operator>=(const Fraction &secondFraction) const
-{
-	return (numerator*secondFraction.denominator >= secondFraction.numerator*denominator);
-}
-
-bool Fraction::operator>=(const std::string& inputString) const
-{
-	return (*this >= Fraction{ inputString });
-}
-
-bool Fraction::operator>=(const char* inputString) const
-{
-	return(*this >= std::string{ inputString });
-}
-
-bool operator>=(const char* inputString, const Fraction &secondFraction)
-{
-	return (Fraction(std::string{ inputString }) >= secondFraction);
-}
-
-bool operator>=(const std::string &inputString, const Fraction &secondFraction)
-{
-	return (Fraction{ inputString } >= secondFraction);
-}
-
-bool Fraction::operator!=(const Fraction &secondFraction) const
-{
-	return ((numerator != secondFraction.numerator) || (denominator != secondFraction.denominator));
-}
-
-bool Fraction::operator!=(const std::string& inputString) const
-{
-	return (*this != Fraction{ inputString });
-}
-
-bool Fraction::operator!=(const char* inputString) const
-{
-	return(*this != std::string{ inputString });
-}
-
-bool operator!=(const char* inputString, const Fraction &secondFraction)
-{
-	return (Fraction(std::string{ inputString }) != secondFraction);
-}
-
-bool operator!=(const std::string &inputString, const Fraction &secondFraction)
-{
-	return (Fraction{ inputString } != secondFraction);
-}
-
-bool Fraction::operator==(const Fraction &secondFraction) const
-{
-	return ((numerator == secondFraction.numerator) && (denominator == secondFraction.denominator));
-}
-
-bool Fraction::operator==(const std::string& inputString) const
-{
-	return (*this == Fraction{ inputString });
-}
-
-bool Fraction::operator==(const char* inputString) const
-{
-	return(*this == std::string{ inputString });
-}
-
-bool operator==(const char* inputString, const Fraction &secondFraction)
-{
-	return (Fraction(std::string{ inputString }) == secondFraction);
-}
-
-bool operator==(const std::string &inputString, const Fraction &secondFraction)
-{
-	return (Fraction{ inputString } == secondFraction);
-}
-
-Fraction::operator bool() const
-{
-	return (numerator != 0);
-}
-
-bool Fraction::isLargerThanUnit()
-{
-	return (numerator > denominator);
-}
-
-bool Fraction::isSmallerThanUnit()
-{
-	return (numerator < denominator);
-}
-
-bool Fraction::isUnit()
-{
-	return (numerator == denominator);
-}
-
-Fraction Fraction::operator+(const Fraction& secondFraction)
-{
-	int gcd{ greatestCommonDivisor(abs(denominator), abs(secondFraction.denominator)) };
-	int multiplyFactor{ secondFraction.denominator / gcd };
-	int secondMultiplyFactor{ denominator / gcd };
-	int resultNumerator{ numerator*multiplyFactor + secondFraction.numerator*secondMultiplyFactor };
-	int resultDenominator{ multiplyFactor*denominator };
-	return Fraction{ resultNumerator, resultDenominator };
-}
-
-Fraction Fraction::operator-(const Fraction& secondFraction)
-{
-	int gcd{ greatestCommonDivisor(abs(denominator), abs(secondFraction.denominator)) };
-	int multiplyFactor{ secondFraction.denominator / gcd };
-	int secondMultiplyFactor{ denominator / gcd };
-	int resultNumerator{ numerator*multiplyFactor - secondFraction.numerator*secondMultiplyFactor };
-	int resultDenominator{ multiplyFactor*denominator };
-	return Fraction{ resultNumerator, resultDenominator };
-}
-
-Fraction Fraction::operator*(const Fraction& secondFraction)
-{
-	return Fraction{ numerator*secondFraction.numerator, denominator*secondFraction.denominator };
-}
-
-Fraction Fraction::operator/(const Fraction& secondFraction)
-{
-	return Fraction{ numerator*secondFraction.denominator, denominator*secondFraction.numerator };
-}
-
-Fraction Fraction::operator+(const std::string& inputString)
-{
-	return(*this + Fraction{ inputString });
-}
-
-Fraction Fraction::operator-(const std::string& inputString)
-{
-	return(*this - Fraction{ inputString });
-}
-
-Fraction Fraction::operator*(const std::string& inputString)
-{
-	return(*this*Fraction{ inputString });
-}
-
-Fraction Fraction::operator/(const std::string& inputString)
-{
-	return(*this / Fraction{ inputString });
-}
-
-Fraction Fraction::operator+(const char* inputString)
-{
-	return(*this + std::string{ inputString });
-}
-
-Fraction Fraction::operator-(const char* inputString)
-{
-	return(*this - std::string{ inputString });
-}
+    int numeratorMultiplicator{mNumerator};
+    int denominatorMultiplicator{mDenominator};
 
-Fraction Fraction::operator*(const char* inputString)
-{
-	return(*this * std::string{ inputString });
-}
-
-Fraction Fraction::operator/(const char* inputString)
-{
-	return(*this / std::string{ inputString });
-}
-
-Fraction operator+(const std::string &inputString, const Fraction &secondFraction)
-{
-	return (Fraction{ inputString } + secondFraction);
-}
-
-Fraction operator-(const std::string &inputString, const Fraction &secondFraction)
-{
-	return (Fraction{ inputString } - secondFraction);
-}
-
-Fraction operator*(const std::string &inputString, const Fraction &secondFraction)
-{
-	return (Fraction{ inputString } * secondFraction);
-}
-
-Fraction operator/(const std::string &inputString, const Fraction &secondFraction)
-{
-	return (Fraction{ inputString } / secondFraction);
-}
-
-Fraction operator+(const char* inputString, const Fraction &secondFraction)
-{
-	return (std::string{ inputString } + secondFraction);
-}
-
-Fraction operator-(const char* inputString, const Fraction &secondFraction)
-{
-	return (std::string{ inputString } - secondFraction);
-}
+    int resultingNumerator{1};
+    int resultingDenominator{1};
 
-Fraction operator*(const char* inputString, const Fraction &secondFraction)
-{
-	return (std::string{ inputString } * secondFraction);
-}
+    if (power < 0)
+    {
+        power = -power;
+        std::swap(numeratorMultiplicator, denominatorMultiplicator);
+    }
 
-Fraction operator/(const char* inputString, const Fraction &secondFraction)
-{
-	return (std::string{ inputString } / secondFraction);
-}
+    while (power > 0)
+    {
+        resultingNumerator *= numeratorMultiplicator;
+        resultingDenominator *= denominatorMultiplicator;
+        --power;
+    }
 
-Fraction Fraction::operator^(int n)
-{
-	Fraction multiplier{ *this };
-	Fraction result(1);
-	if (n<0)
-	{
-		multiplier = inverse();
-		n = -n;
-	}
-	while (0 < n--)
-	{
-		result = result*multiplier;
-	}
-	return result;
-}
+    const Fraction result{resultingNumerator, resultingDenominator};
 
-void Fraction::operator+=(const Fraction& secondFraction)
-{
-	*this = *this + secondFraction;
+    return result;
 }
 
-void Fraction::operator+=(const std::string& inputString)
+void Fraction::operator+=(const Fraction& fraction)
 {
-	*this = *this + inputString;
+    *this = *this + fraction;
 }
 
-void Fraction::operator+=(const char* inputString)
+void Fraction::operator+=(const std::string& fractionString)
 {
-	*this = *this + inputString;
+    *this = *this + fractionString;
 }
 
-void Fraction::operator-=(const Fraction& secondFraction)
+void Fraction::operator+=(const char* fractionString)
 {
-	*this = *this - secondFraction;
+    *this = *this + fractionString;
 }
 
-void Fraction::operator-=(const std::string& inputString)
+void Fraction::operator-=(const Fraction& fraction)
 {
-	*this = *this - inputString;
+    *this = *this - fraction;
 }
 
-void Fraction::operator-=(const char* inputString)
+void Fraction::operator-=(const std::string& fractionString)
 {
-	*this = *this - inputString;
+    *this = *this - fractionString;
 }
 
-void Fraction::operator*=(const Fraction& secondFraction)
+void Fraction::operator-=(const char* fractionString)
 {
-	*this = *this * secondFraction;
+    *this = *this - fractionString;
 }
 
-void Fraction::operator*=(const std::string& inputString)
+void Fraction::operator*=(const Fraction& fraction)
 {
-	*this = *this * inputString;
+    *this = *this * fraction;
 }
 
-void Fraction::operator*=(const char* inputString)
+void Fraction::operator*=(const std::string& fractionString)
 {
-	*this = *this * inputString;
+    *this = *this * fractionString;
 }
 
-void Fraction::operator/=(const Fraction& secondFraction)
+void Fraction::operator*=(const char* fractionString)
 {
-	*this = *this / secondFraction;
+    *this = *this * fractionString;
 }
 
-void Fraction::operator/=(const std::string& inputString)
+void Fraction::operator/=(const Fraction& fraction)
 {
-	*this = *this / inputString;
+    *this = *this / fraction;
 }
 
-void Fraction::operator/=(const char* inputString)
+void Fraction::operator/=(const std::string& fractionString)
 {
-	*this = *this / inputString;
+    *this = *this / fractionString;
 }
 
-void Fraction::operator^=(int n)
+void Fraction::operator/=(const char* fractionString)
 {
-	*this = *this ^ n;
+    *this = *this / fractionString;
 }
 
-Fraction Fraction::operator++(int)
+void Fraction::operator^=(int power)
 {
-	Fraction fract{ *this };
-	fract.numerator += fract.denominator;
-	fract.decimal = static_cast<double>(fract.numerator) / fract.denominator;
-	return fract;
+    *this = *this ^ power;
 }
 
 Fraction& Fraction::operator++()
 {
-	numerator += denominator;
-	decimal = static_cast<double>(numerator) / denominator;
-	return *this;
+    mNumerator += mDenominator;
+    mDecimalValue = static_cast<double>(mNumerator) / mDenominator;
+
+    return *this;
 }
 
-Fraction Fraction::operator--(int)
+Fraction Fraction::operator++(int)
 {
-	Fraction fract{ *this };
-	fract.numerator -= fract.denominator;
-	fract.decimal = static_cast<double>(fract.numerator) / fract.denominator;
-	return fract;
+    Fraction fraction{ *this };
+    fraction.mNumerator += fraction.mDenominator;
+    fraction.mDecimalValue = static_cast<double>(fraction.mNumerator) / fraction.mDenominator;
+
+    return fraction;
 }
 
 Fraction& Fraction::operator--()
 {
-	numerator -= denominator;
-	decimal = static_cast<double>(numerator) / denominator;
-	return *this;
+    mNumerator -= mDenominator;
+    mDecimalValue = static_cast<double>(mNumerator) / mDenominator;
+
+    return *this;
 }
 
-Fraction Fraction::inverse()
+Fraction Fraction::operator--(int)
 {
-	if (!numerator)
-	{
-        throw std::runtime_error{ "Error! Division by 0" };
-	}
-	return Fraction{ denominator, numerator };
+    Fraction fract{ *this };
+    fract.mNumerator -= fract.mDenominator;
+    fract.mDecimalValue = static_cast<double>(fract.mNumerator) / fract.mDenominator;
+
+    return fract;
 }
 
-std::istream& operator >> (std::istream& inputStream, Fraction& fraction)
+bool Fraction::operator<(const Fraction& fraction) const
 {
-	std::string streamBuffer;
-	std::getline(inputStream, streamBuffer);
-	fraction = streamBuffer;
-	return inputStream;
+    const bool cIsLessThan{isLessThan(fraction)};
+    return cIsLessThan;
+}
+
+bool Fraction::operator<(const std::string& fractionString) const
+{
+    const bool cIsLessThan{isLessThan(Fraction{fractionString})};
+    return cIsLessThan;
+}
+
+bool operator<(const std::string& fractionString, const Fraction& fraction)
+{
+    const bool cIsLessThan{Fraction{fractionString}.isLessThan(fraction)};
+    return cIsLessThan;
+}
+
+bool Fraction::operator<(const char* fractionString) const
+{
+    const bool cIsLessThan{isLessThan(Fraction{fractionString})};
+    return cIsLessThan;
+}
+
+bool operator<(const char* fractionString, const Fraction& fraction)
+{
+    const bool cIsLessThan{Fraction{fractionString}.isLessThan(fraction)};
+    return cIsLessThan;
+}
+
+bool Fraction::operator<=(const Fraction& fraction) const
+{
+    const bool cIsLessThanOrEqual{!isGreaterThan(fraction)};
+    return cIsLessThanOrEqual;
+}
+
+bool Fraction::operator<=(const std::string& fractionString) const
+{
+    const bool cIsLessThanOrEqual{!isGreaterThan(Fraction{fractionString})};
+    return cIsLessThanOrEqual;
+}
+
+bool operator<=(const std::string& fractionString, const Fraction& fraction)
+{
+    const bool cIsLessThanOrEqual{!Fraction{fractionString}.isGreaterThan(fraction)};
+    return cIsLessThanOrEqual;
+}
+
+bool Fraction::operator<=(const char* fractionString) const
+{
+    const bool cIsLessThanOrEqual{!isGreaterThan(Fraction{fractionString})};
+    return cIsLessThanOrEqual;
+}
+
+bool operator<=(const char* fractionString, const Fraction& fraction)
+{
+    const bool cIsLessThanOrEqual{!Fraction{fractionString}.isGreaterThan(fraction)};
+    return cIsLessThanOrEqual;
+}
+
+bool Fraction::operator>(const Fraction& fraction) const
+{
+    const bool cIsGreaterThan{isGreaterThan(fraction)};
+    return cIsGreaterThan;
+}
+
+bool Fraction::operator>(const std::string& fractionString) const
+{
+    const bool cIsGreaterThan{isGreaterThan(Fraction{fractionString})};
+    return cIsGreaterThan;
+}
+
+bool operator>(const std::string& fractionString, const Fraction& fraction)
+{
+    const bool cIsGreaterThan{Fraction{fractionString}.isGreaterThan(fraction)};
+    return cIsGreaterThan;
+}
+
+bool Fraction::operator>(const char* fractionString) const
+{
+    const bool cIsGreaterThan{isGreaterThan(Fraction{fractionString})};
+    return cIsGreaterThan;
+}
+
+bool operator>(const char* fractionString, const Fraction& fraction)
+{
+    const bool cIsGreaterThan{Fraction{fractionString}.isGreaterThan(fraction)};
+    return cIsGreaterThan;
+}
+
+bool Fraction::operator>=(const Fraction& fraction) const
+{
+    const bool cIsGreaterThanOrEqual{!isLessThan(fraction)};
+    return cIsGreaterThanOrEqual;
+}
+
+bool Fraction::operator>=(const std::string& fractionString) const
+{
+    const bool cIsGreaterThanOrEqual{!isLessThan(Fraction{fractionString})};
+    return cIsGreaterThanOrEqual;
+}
+
+bool operator>=(const std::string& fractionString, const Fraction& fraction)
+{
+    const bool cIsGreaterThanOrEqual{!Fraction{fractionString}.isLessThan(fraction)};
+    return cIsGreaterThanOrEqual;
+}
+
+bool Fraction::operator>=(const char* fractionString) const
+{
+    const bool cIsGreaterThanOrEqual{!isLessThan(Fraction{fractionString})};
+    return cIsGreaterThanOrEqual;
+}
+
+bool operator>=(const char* fractionString, const Fraction& fraction)
+{
+    const bool cIsGreaterThanOrEqual{!Fraction{fractionString}.isLessThan(fraction)};
+    return cIsGreaterThanOrEqual;
+}
+
+bool Fraction::operator==(const Fraction& fraction) const
+{
+    const bool cIsEqualTo(isEqualTo(fraction));
+    return cIsEqualTo;
+}
+
+bool Fraction::operator==(const std::string& fractionString) const
+{
+    const bool cIsEqualTo(isEqualTo(Fraction{fractionString}));
+    return cIsEqualTo;
+}
+
+bool operator==(const std::string& fractionString, const Fraction& fraction)
+{
+    const bool cIsEqualTo(Fraction{fractionString}.isEqualTo(fraction));
+    return cIsEqualTo;
+}
+
+bool Fraction::operator==(const char* fractionString) const
+{
+    const bool cIsEqualTo(isEqualTo(Fraction{fractionString}));
+    return cIsEqualTo;
+}
+
+bool operator==(const char* fractionString, const Fraction& fraction)
+{
+    const bool cIsEqualTo(Fraction{fractionString}.isEqualTo(fraction));
+    return cIsEqualTo;
+}
+
+bool Fraction::operator!=(const Fraction& fraction) const
+{
+    const bool cIsDifferentFrom{!isEqualTo(fraction)};
+    return cIsDifferentFrom;
+}
+
+bool Fraction::operator!=(const std::string& fractionString) const
+{
+    const bool cIsDifferentFrom{!isEqualTo(Fraction{fractionString})};
+    return cIsDifferentFrom;
+}
+
+bool operator!=(const std::string& fractionString, const Fraction& fraction)
+{
+    const bool cIsDifferentFrom{!Fraction{fractionString}.isEqualTo(fraction)};
+    return cIsDifferentFrom;
+}
+
+bool Fraction::operator!=(const char* fractionString) const
+{
+    const bool cIsDifferentFrom{!isEqualTo(Fraction{fractionString})};
+    return cIsDifferentFrom;
+}
+
+bool operator!=(const char* fractionString, const Fraction& fraction)
+{
+    const bool cIsDifferentFrom{!Fraction{fractionString}.isEqualTo(fraction)};
+    return cIsDifferentFrom;
+}
+
+Fraction::operator bool() const
+{
+    const bool cResult{mNumerator != 0};
+    return cResult;
+}
+
+bool Fraction::isLargerThanUnit() const
+{
+    const bool cIsLargerThanUnit{mNumerator > mDenominator};
+    return cIsLargerThanUnit;
+}
+
+bool Fraction::isSmallerThanUnit() const
+{
+    const bool cIsSmallerThanUnit{mNumerator < mDenominator};
+    return cIsSmallerThanUnit;
+}
+
+bool Fraction::isUnit() const
+{
+    const bool cIsUnit{mNumerator == mDenominator};
+    return cIsUnit;
+}
+
+std::istream& operator>>(std::istream& inputStream, Fraction& fraction)
+{
+    std::string streamBuffer;
+    std::getline(inputStream, streamBuffer);
+    fraction = streamBuffer;
+
+    return inputStream;
 }
 
 std::ostream& operator<<(std::ostream& outputStream, Fraction& fraction)
 {
-	outputStream << fraction.numerator << "/" << fraction.denominator;
-	return outputStream;
+    outputStream << fraction.mNumerator << "/" << fraction.mDenominator;
+    return outputStream;
 }
 
-std::ifstream& operator >> (std::ifstream& inputFileStream, Fraction& fraction)
+std::ifstream& operator>>(std::ifstream& inputFileStream, Fraction& fraction)
 {
-	std::string streamBuffer;
-	std::getline(inputFileStream, streamBuffer);
-	fraction = streamBuffer;
-	return inputFileStream;
+    std::string streamBuffer;
+    std::getline(inputFileStream, streamBuffer);
+    fraction = streamBuffer;
+
+    return inputFileStream;
 }
 
-std::ofstream& operator<<(std::ofstream& outputFileStream, Fraction &fraction)
+std::ofstream& operator<<(std::ofstream& outputFileStream, Fraction& fraction)
 {
-	outputFileStream << fraction.numerator << "/" << fraction.denominator;
-	return outputFileStream;
+    outputFileStream << fraction.mNumerator << "/" << fraction.mDenominator;
+    return outputFileStream;
 }
 
-Fraction::~Fraction(void)
+Fraction Fraction::inverse() const
 {
-	// not used
+    Fraction result{1};
+
+    if (mNumerator != 0)
+    {
+        result = Fraction{mDenominator, mNumerator};
+    }
+    else
+    {
+        throw std::runtime_error{ "Error! Division by 0" };
+    }
+
+    return result;
+}
+
+/* Check that the string has the right FRACTION format
+   - no non-numeric characters other than '-' and '/'
+   - maximum one '/' character and this one correctly placed: there should be minimum one numeric digit before and one numeric digit after it
+   - maximum two '-' characters and these ones correctly placed: first one in the first position and second one right after slash (if slash exists)
+*/
+int Fraction::parseFractionString(const std::string& fractionString)
+{
+    int slashIndex{static_cast<int>(fractionString.find_first_of('/'))};
+
+    const auto cMinusCharsCount{std::count(fractionString.cbegin(), fractionString.cend(), '-')};
+    const auto cSlashCharsCount{std::count(fractionString.cbegin(), fractionString.cend(), '/')};
+    const auto cNonDigitCharsCount{std::count_if(fractionString.cbegin(), fractionString.cend(), [](int character) {return !isdigit(character);})};
+
+    const size_t cFractionStringSize{fractionString.size()};
+
+    const bool cInvalidNonDigitCharsCount{(cSlashCharsCount != 1) || (cMinusCharsCount > 2) || (cNonDigitCharsCount > cSlashCharsCount + cMinusCharsCount)};
+    const bool cInvalidSlashPosition{(0 == slashIndex) || ( '-' == fractionString[0] && 1 == slashIndex) || (cFractionStringSize - 1 == static_cast<size_t>(slashIndex))};
+    const bool cInvalidMinusPosition{((1 == cMinusCharsCount) && ( '-' !=  fractionString[0] && '-' != fractionString[slashIndex + 1] )) ||
+                                     ((2 == cMinusCharsCount) && ( '-' != fractionString[0] || '-' != fractionString[slashIndex + 1] )) ||
+                                     ('-' == fractionString[cFractionStringSize - 1])};
+
+    if (cInvalidNonDigitCharsCount || cInvalidSlashPosition || cInvalidMinusPosition)
+    {
+        slashIndex = static_cast<int>(FractionStringIndexes::ERROR);
+    }
+
+    return slashIndex;
+}
+
+/* Check that the string has the right DECIMAL format
+   - no non-numeric characters other than '-' and '.'
+   - maximum one '.' character and this one correctly placed: there should be minimum one numeric digit before and one numeric digit after it
+   - maximum one '-' character and this one correctly placed: should be in the first position
+*/
+int Fraction::parseDecimalString(const std::string& decimalString)
+{
+    // starting assumption: string is an integer
+    int decimalIndex{static_cast<int>(DecimalStringIndexes::INTEGER)};
+
+    const auto cDotCharsCount{std::count(decimalString.begin(), decimalString.end(), '.')};
+    const auto cMinusCharsCount{std::count(decimalString.begin(), decimalString.end(), '-')};
+    const auto cNonDigitCharsCount{std::count_if(decimalString.cbegin(), decimalString.cend(), [](int character) {return !isdigit(character);})};
+
+    const size_t cDecimalStringSize{decimalString.size()};
+
+    const bool cInvalidNonDigitCharsCount{(cDotCharsCount > 1) || (cMinusCharsCount > 1) || (cNonDigitCharsCount > cDotCharsCount + cMinusCharsCount)};
+    const bool cInvalidDotPosition{('.' == decimalString[0]) || (1 == cMinusCharsCount && '.' == decimalString[1]) || '.' == decimalString[cDecimalStringSize - 1]};
+    const bool cInvalidMinusPosition{(1 == cMinusCharsCount && '-' != decimalString[0])};
+
+    if (cInvalidNonDigitCharsCount || cInvalidDotPosition || cInvalidMinusPosition)
+	{
+        decimalIndex = static_cast<int>(DecimalStringIndexes::INVALID);
+	}
+
+    if (static_cast<int>(DecimalStringIndexes::INVALID) != decimalIndex && 1 == cDotCharsCount)
+	{
+        decimalIndex = decimalString.find_first_of('.');
+	}
+
+    return decimalIndex;
+}
+
+int Fraction::getGreatestCommonDivisor(int first, int second)
+{
+    int greatestCommonDivisor{1};
+
+    if (0 != first && 0 != second)
+    {
+        first = std::abs(first);
+        second = std::abs(second);
+
+        int remainder{first % second};
+
+        while (remainder)
+        {
+            first = second;
+            second = remainder;
+            remainder = first % second;
+        }
+
+        greatestCommonDivisor = second;
+    }
+    else if (0 != first)
+    {
+        greatestCommonDivisor = std::abs(first);
+    }
+    else if (0 != second)
+    {
+        greatestCommonDivisor = std::abs(second);
+    }
+    else
+    {
+        throw std::runtime_error{"Error! Cannot retrieve greatest common divisor of two 0 numbers"};
+    }
+
+    return greatestCommonDivisor;
 }
 
 void Fraction::normalize()
 {
-	int gcd{ greatestCommonDivisor(abs(numerator), abs(denominator)) };
-	if (gcd != 1)
-	{
-		numerator /= gcd;
-		denominator /= gcd;
-	}
-	if (denominator<0)
-	{
-		numerator = -numerator;
-		denominator = -denominator;
-	}
-	decimal = static_cast<double>(numerator) / denominator;
+    const int cGreatestCommonDivisor{getGreatestCommonDivisor(std::abs(mNumerator), std::abs(mDenominator))};
+
+    if (1 != cGreatestCommonDivisor)
+    {
+        mNumerator /= cGreatestCommonDivisor;
+        mDenominator /= cGreatestCommonDivisor;
+    }
+
+    if (mDenominator < 0)
+    {
+        mNumerator = -mNumerator;
+        mDenominator = -mDenominator;
+    }
+
+    mDecimalValue = static_cast<double>(mNumerator) / mDenominator;
 }
 
-int Fraction::checkFractionString(const std::string &fractionString)
+Fraction Fraction::add(const Fraction& fraction, Fraction::Sign sign) const
 {
-	int slashIndex{ static_cast<int>(fractionString.find_first_of('/')) };
-	// calculate specific parameters of the fraction string (e.g. number of minus characters)
-    auto minusCount{ std::count(fractionString.begin(), fractionString.end(), '-') };
-    auto slashCount{ std::count(fractionString.begin(), fractionString.end(), '/') };
-	int nonDigitCount{ 0 };
-	for (std::string::const_iterator it{ fractionString.cbegin() }; it != fractionString.cend(); ++it)
-	{
-		if (!isdigit(*it))
-		{
-			++nonDigitCount;
-		}
-	}
-	// check that the format of the string is correct
-	// - enforce the right number and types of non-numeric characters
-	if (slashCount != 1)
-	{
-		slashIndex = static_cast<int>(FractionString::ERROR_INDEX);
-	}
-	else if (minusCount > 2)
-	{
-		slashIndex = static_cast<int>(FractionString::ERROR_INDEX);
-	}
-	else if (nonDigitCount > slashCount + minusCount)
-	{
-		slashIndex = static_cast<int>(FractionString::ERROR_INDEX);
-	}
-	// - last character should always be numeric
-	else if (!isdigit(fractionString[fractionString.length() - 1]))
-	{
-		slashIndex = static_cast<int>(FractionString::ERROR_INDEX);
-	}
-	// - ensure the slash character is correctly placed
-	else if ( (0 == slashIndex) || ( '-' == fractionString[0] && 1 == slashIndex) )
-	{
-		slashIndex = static_cast<int>(FractionString::ERROR_INDEX);
-	}
-	// - ensure the minus character(s) is/are correctly placed (if any)
-	else if ( (1 == minusCount) && ( '-' !=  fractionString[0] && '-' != fractionString[slashIndex + 1] ) )
-	{
-		slashIndex = static_cast<int>(FractionString::ERROR_INDEX);
-	}
-	else if ( (2 == minusCount) && ( '-' != fractionString[0] || '-' != fractionString[slashIndex + 1] ) )
-	{
-		slashIndex = static_cast<int>(FractionString::ERROR_INDEX);
-	}
-	// return index of the slash character if format is ok (or an error number if not)
-	return slashIndex;
+    const int cGreatestCommonDivisor{ getGreatestCommonDivisor(std::abs(mDenominator), std::abs(fraction.mDenominator)) };
+    const int cFirstMultiplicationFactor{ fraction.mDenominator / cGreatestCommonDivisor };
+    const int cSecondMultiplicationFactor{ static_cast<int>(sign) * mDenominator / cGreatestCommonDivisor };
+    const int cResultingNumerator{mNumerator * cFirstMultiplicationFactor + fraction.mNumerator * cSecondMultiplicationFactor};
+    const int cResultingDenominator{cFirstMultiplicationFactor * mDenominator};
+
+    const Fraction cResult{cResultingNumerator, cResultingDenominator};
+
+    return cResult;
 }
 
-int Fraction::checkDecimalString(const std::string &decimalString)
+Fraction Fraction::multiply(const Fraction& fraction) const
 {
-	// assume the string is an integer
-	int decimalIndex{ static_cast<int>(DecimalString::NO_DECIMAL_INDEX) };
-	// calculate specific parameters of the fraction string (e.g. number of minus characters)
-    auto dotCount{ std::count(decimalString.begin(), decimalString.end(), '.') };
-    auto minusCount{ std::count(decimalString.begin(), decimalString.end(), '-') };
-	int nonDigitCount{ 0 };
-	for (std::string::const_iterator it{ decimalString.cbegin() }; it != decimalString.cend(); ++it)
-	{
-		if (!isdigit(*it))
-		{
-			++nonDigitCount;
-		}
-	}
-	// check that the format of the string is correct
-	// - enforce the correct number of types of non-numeric characters
-	if (dotCount > 1 || minusCount > 1)
-	{
-		decimalIndex = static_cast<int>(DecimalString::ERROR_INDEX);
-	}
-	else if (nonDigitCount > dotCount + minusCount)
-	{
-		decimalIndex = static_cast<int>(DecimalString::ERROR_INDEX);
-	}
-	// - ensure the last character is always numeric
-	else if (!isdigit(decimalString[decimalString.length() - 1]))
-	{
-		decimalIndex = static_cast<int>(DecimalString::ERROR_INDEX);
-	}
-	// - ensure the first character is always numeric or minus (-)
-	else if ('.' == decimalString[0])
-	{
-		decimalIndex = static_cast<int>(DecimalString::ERROR_INDEX);
-	}
-	// - ensure minus is always the first character and is always followed by a digit
-	else if ( 1 == minusCount && ( '-' != decimalString[0] || '.' == decimalString[1] ) )
-	{
-		decimalIndex = static_cast<int>(DecimalString::ERROR_INDEX);
-	}
-	// if format is ok and there is a dot: set index to actual dot position
-	if (static_cast<int>(DecimalString::ERROR_INDEX) != decimalIndex && 1 == dotCount)
-	{
-		decimalIndex = decimalString.find_first_of('.');
-	}
-	// return the obtained index (decimal/integer/error)
-	return decimalIndex;
+    const int cResultingNumerator{mNumerator * fraction.mNumerator};
+    const int cResultingDenominator{mDenominator * fraction.mDenominator};
+
+    const Fraction cResult{cResultingNumerator, cResultingDenominator};
+
+    return cResult;
 }
 
-int Fraction::greatestCommonDivisor(int firstNumber, int secondNumber)
+
+Fraction Fraction::divide(const Fraction& fraction) const
 {
-	// assume numbers are prime between each other (so variable is initialized)
-	int gcd{ 1 };
-	// gcd is undefined if both numbers are 0
-	if (!firstNumber && !secondNumber)
-	{
-        throw std::runtime_error{ "Error! Cannot retrieve greatest common divisor of two 0 numbers" };
-	}
-	// if one of the numbers is 0, the other is the gcd
-	else if (!firstNumber)
-	{
-		gcd = abs(secondNumber);
-	}
-	else if (!secondNumber)
-	{
-		gcd = abs(firstNumber);
-	}
-	// if both are different from 0, then gcd needs to be calculated using the remainder method
-	else
-	{
-		firstNumber = abs(firstNumber);
-		secondNumber = abs(secondNumber);
-		int remainder{ firstNumber % secondNumber };
-		while (remainder)
-		{
-			firstNumber = secondNumber;
-			secondNumber = remainder;
-			remainder = firstNumber % secondNumber;
-		}
-		gcd = secondNumber;
-	}
-	return gcd;
+    const int cResultingNumerator{mNumerator * fraction.mDenominator};
+    const int cResultingDenominator{mDenominator * fraction.mNumerator};
+
+    const Fraction cResult{cResultingNumerator, cResultingDenominator};
+
+    return cResult;
+}
+
+bool Fraction::isLessThan(const Fraction& fraction) const
+{
+    const int cLeftNormalizedNumerator{mNumerator * fraction.mDenominator};
+    const int cRightNormalizedNumerator{fraction.mNumerator * mDenominator};
+    const bool cIsLessThan{cLeftNormalizedNumerator < cRightNormalizedNumerator};
+
+    return cIsLessThan;
+}
+
+bool Fraction::isGreaterThan(const Fraction& fraction) const
+{
+    const int cLeftNormalizedNumerator{mNumerator * fraction.mDenominator};
+    const int cRightNormalizedNumerator{fraction.mNumerator * mDenominator};
+    const bool cIsGreaterThan{cLeftNormalizedNumerator > cRightNormalizedNumerator};
+
+    return cIsGreaterThan;
+}
+
+bool Fraction::isEqualTo(const Fraction& fraction) const
+{
+    const int cLeftNormalizedNumerator{mNumerator * fraction.mDenominator};
+    const int cRightNormalizedNumerator{fraction.mNumerator * mDenominator};
+    const bool cIsEqualTo{cLeftNormalizedNumerator == cRightNormalizedNumerator};
+
+    return cIsEqualTo;
 }

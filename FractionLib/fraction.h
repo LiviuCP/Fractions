@@ -1,144 +1,177 @@
-#pragma once
+#ifndef FRACTION_H
+#define FRACTION_H
+
 #include <string>
 #include <fstream>
 #include <stdexcept>
 
-enum class FractionString
-{
-	ERROR_INDEX = -2,
-	NULL_INDEX = 0
-};
-
-enum class DecimalString
-{
-	ERROR_INDEX = -2,
-	NO_DECIMAL_INDEX = -1,
-	NULL_INDEX = 0
-};
-
-class WrongFormatException
-{
-public:
-	WrongFormatException();
-	std::string what();
-private:
-	std::exception wrongFormatException;
-};
-
 class Fraction
 {
 public:
-	// constructors
-	Fraction(void);
-	explicit Fraction(int);
-	explicit Fraction(double);
-	Fraction(int, int);
-	explicit Fraction(const std::string&);
-	// getters
-	int getNumerator() const;
-	int getDenominator() const;
-	double getDecimal() const;
-	// setters
-	void setNumerator(int);
-	void setDenominator(int);
-	void setDecimal(double);
-	// arithmetic operators
-	Fraction operator+(const Fraction&);
-	Fraction operator+(const std::string&);
-	Fraction operator+(const char*);
-	friend Fraction operator+(const std::string&, const Fraction&);
-	friend Fraction operator+(const char*, const Fraction&);
-	Fraction operator-(const Fraction&);
-	Fraction operator-(const std::string&);
-	Fraction operator-(const char*);
-	friend Fraction operator-(const std::string&, const Fraction&);
-	friend Fraction operator-(const char*, const Fraction&);
-	Fraction operator*(const Fraction&);
-	Fraction operator*(const std::string&);
-	Fraction operator*(const char*);
-	friend Fraction operator*(const std::string&, const Fraction&);
-	friend Fraction operator*(const char*, const Fraction&);
-	Fraction operator/(const Fraction&);
-	Fraction operator/(const std::string&);
-	Fraction operator/(const char*);
-	friend Fraction operator/(const std::string&, const Fraction&);
-	friend Fraction operator/(const char*, const Fraction&);
-	Fraction operator^(int);
-	void operator+=(const Fraction&);
-	void operator+=(const std::string&);
-	void operator+=(const char*);
-	void operator-=(const Fraction&);
-	void operator-=(const std::string&);
-	void operator-=(const char*);
-	void operator*=(const Fraction&);
-	void operator*=(const std::string&);
-	void operator*=(const char*);
-	void operator/=(const Fraction&);
-	void operator/=(const std::string&);
-	void operator/=(const char*);
-	void operator^=(int);
-	Fraction& operator++();
+    enum class DecimalStringIndexes
+    {
+        INVALID = -2,
+        INTEGER = -1, // integer string, still valid
+        NIL = 0 // just checking the string is "pure" decimal (index of the dot should be greater than 0)
+    };
+
+    enum class FractionStringIndexes
+    {
+        ERROR = -2, // same error index for consistency to decimal string
+        NIL = 0 // just for validity checking (index of the slash should be greater than 0)
+    };
+
+    // constructors
+    Fraction();
+    explicit Fraction(int numerator);
+    explicit Fraction(double decimalValue);
+    Fraction(int numerator, int denominator);
+    explicit Fraction(const std::string& fractionString);
+
+    // assignment operators
+    Fraction& operator=(int numerator);
+    Fraction& operator=(double decimalValue);
+    Fraction& operator=(const std::string& fractionString);
+    Fraction& operator=(const char* fractionString);
+
+    // getters and setters
+    void setNumerator(int numerator);
+    int getNumerator() const;
+
+    void setDenominator(int denominator);
+    int getDenominator() const;
+
+    void setDecimalValue(double decimalValue);
+    double getDecimalValue() const;
+
+    // arithmetic operators
+    Fraction operator+(const Fraction& fraction);
+    Fraction operator+(const std::string& fractionString);
+    friend Fraction operator+(const std::string& fractionString, const Fraction& fraction);
+    Fraction operator+(const char* fractionString);
+    friend Fraction operator+(const char* fractionString, const Fraction& fraction);
+
+    Fraction operator-(const Fraction& fraction);
+    Fraction operator-(const std::string& fractionString);
+    friend Fraction operator-(const std::string& fractionString, const Fraction& fraction);
+    Fraction operator-(const char* fractionString);
+    friend Fraction operator-(const char* fractionString, const Fraction& fraction);
+
+    Fraction operator*(const Fraction& fraction);
+    Fraction operator*(const std::string& fractionString);
+    friend Fraction operator*(const std::string& fractionString, const Fraction& fraction);
+    Fraction operator*(const char* fractionString);
+    friend Fraction operator*(const char* fractionString, const Fraction& fraction);
+
+    Fraction operator/(const Fraction& fraction);
+    Fraction operator/(const std::string& fractionString);
+    friend Fraction operator/(const std::string& fractionString, const Fraction& fraction);
+    Fraction operator/(const char* fractionString);
+    friend Fraction operator/(const char* fractionString, const Fraction& fraction);
+
+    Fraction operator^(int power);
+
+    void operator+=(const Fraction& fraction);
+    void operator+=(const std::string& fractionString);
+    void operator+=(const char* fractionString);
+
+    void operator-=(const Fraction& fraction);
+    void operator-=(const std::string& fractionString);
+    void operator-=(const char* fractionString);
+
+    void operator*=(const Fraction& fraction);
+    void operator*=(const std::string& fractionString);
+    void operator*=(const char* fractionString);
+
+    void operator/=(const Fraction& fraction);
+    void operator/=(const std::string& fractionString);
+    void operator/=(const char* fractionString);
+
+    void operator^=(int power);
+
+    Fraction& operator++();
 	Fraction operator++(int);
 	Fraction& operator--();
 	Fraction operator--(int);
-	// logical operators
-	bool operator>(const Fraction&) const;
-	bool operator>(const std::string&) const;
-	friend bool operator>(const std::string&, const Fraction&);
-	bool operator>(const char*) const;
-	friend bool operator>(const char*, const Fraction&);
-	bool operator>=(const Fraction&) const;
-	bool operator>=(const std::string&) const;
-	friend bool operator>=(const std::string&, const Fraction&);
-	bool operator>=(const char*) const;
-	friend bool operator>=(const char*, const Fraction&);
-	bool operator<(const Fraction&) const;
-	bool operator<(const std::string&) const;
-	friend bool operator<(const std::string&, const Fraction&);
-	bool operator<(const char*) const;
-	friend bool operator<(const char*, const Fraction&);
-	bool operator<=(const Fraction&) const;
-	bool operator<=(const std::string&) const;
-	friend bool operator<=(const std::string&, const Fraction&);
-	bool operator<=(const char*) const;
-	friend bool operator<=(const char*, const Fraction&);
-	bool operator!=(const Fraction&) const;
-	bool operator!=(const std::string&) const;
-	friend bool operator!=(const std::string&, const Fraction&);
-	bool operator!=(const char*) const;
-	friend bool operator!=(const char*, const Fraction&);
-	bool operator==(const Fraction&) const;
-	bool operator==(const std::string&) const;
-	friend bool operator==(const std::string&, const Fraction&);
-	bool operator==(const char*) const;
-	friend bool operator==(const char*, const Fraction&);
-	operator bool() const;
-	// other logical test functions
-	bool isLargerThanUnit();
-	bool isSmallerThanUnit();
-	bool isUnit();
-	// assignment operators
-	Fraction& operator=(int);
-	Fraction& operator=(double);
-	Fraction& operator=(const char*);
-	Fraction& operator=(const std::string&);
-	// IO operators
-	friend std::ostream& operator<<(std::ostream&, Fraction&);
-	friend std::istream& operator >> (std::istream&, Fraction&);
-	friend std::ofstream& operator<<(std::ofstream&, Fraction&);
-	friend std::ifstream& operator >> (std::ifstream&, Fraction&);
-	// other functions
-	Fraction inverse();
-	// destructor
-	~Fraction(void);
-	// static helper functions
-	static int greatestCommonDivisor(int, int);
-	static int checkFractionString(const std::string&);
-	static int checkDecimalString(const std::string&);
+
+    // logical operators
+    bool operator<(const Fraction& fraction) const;
+    bool operator<(const std::string& fractionString) const;
+    friend bool operator<(const std::string& fractionString, const Fraction& fraction);
+    bool operator<(const char* fractionString) const;
+    friend bool operator<(const char* fractionString, const Fraction& fraction);
+
+    bool operator<=(const Fraction& fraction) const;
+    bool operator<=(const std::string& fractionString) const;
+    friend bool operator<=(const std::string& fractionString, const Fraction& fraction);
+    bool operator<=(const char* fractionString) const;
+    friend bool operator<=(const char* fractionString, const Fraction& fraction);
+
+    bool operator>(const Fraction& fraction) const;
+    bool operator>(const std::string& fractionString) const;
+    friend bool operator>(const std::string& fractionString, const Fraction& fraction);
+    bool operator>(const char* fractionString) const;
+    friend bool operator>(const char* fractionString, const Fraction& fraction);
+
+    bool operator>=(const Fraction& fraction) const;
+    bool operator>=(const std::string& fractionString) const;
+    friend bool operator>=(const std::string& fractionString, const Fraction& fraction);
+    bool operator>=(const char* fractionString) const;
+    friend bool operator>=(const char* fractionString, const Fraction& fraction);
+
+    bool operator==(const Fraction& fraction) const;
+    bool operator==(const std::string& fractionString) const;
+    friend bool operator==(const std::string& fractionString, const Fraction& fraction);
+    bool operator==(const char* fractionString) const;
+    friend bool operator==(const char* fractionString, const Fraction& fraction);
+
+    bool operator!=(const Fraction& fraction) const;
+    bool operator!=(const std::string& fractionString) const;
+    friend bool operator!=(const std::string& fractionString, const Fraction& fraction);
+    bool operator!=(const char* fractionString) const;
+    friend bool operator!=(const char* fractionString, const Fraction& fraction);
+
+    operator bool() const;
+
+    // other logical test functions
+    bool isLargerThanUnit() const;
+    bool isSmallerThanUnit() const;
+    bool isUnit() const;
+
+    // IO operators
+    friend std::istream& operator>>(std::istream& inputStream, Fraction& fraction);
+    friend std::ostream& operator<<(std::ostream& outputStream, Fraction& fraction);
+    friend std::ifstream& operator>>(std::ifstream& inputFileStream, Fraction& fraction);
+    friend std::ofstream& operator<<(std::ofstream& outputFileStream, Fraction& fraction);
+
+    // other functions
+    Fraction inverse() const;
+
+    // static helper functions
+    static int parseFractionString(const std::string& fractionString);
+    static int parseDecimalString(const std::string& decimalString);
+    static int getGreatestCommonDivisor(int first, int second);
+
 private:
-	int numerator;
-	int denominator;
-	double decimal;
-private:
-	void normalize();
+    enum class Sign : short
+    {
+        Minus = -1,
+        Plus = 1
+    };
+
+    void normalize();
+
+    Fraction add(const Fraction& fraction, Sign sign) const;
+    Fraction multiply(const Fraction& fraction) const;
+    Fraction divide(const Fraction& fraction) const;
+
+    bool isLessThan(const Fraction& fraction) const;
+    bool isGreaterThan(const Fraction& fraction) const;
+    bool isEqualTo(const Fraction& fraction) const;
+
+	int mNumerator;
+	int mDenominator;
+    double mDecimalValue;
 };
+
+#endif // FRACTION_H

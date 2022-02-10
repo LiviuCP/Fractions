@@ -33,7 +33,7 @@ TEST(throwingExceptions, divisionByZero)
 
 TEST(throwingExceptions, twoZeroNumbersCommonDivisor)
 {
-    EXPECT_THROW(Fraction::greatestCommonDivisor(0, 0), std::runtime_error);
+    EXPECT_THROW(Fraction::getGreatestCommonDivisor(0, 0), std::runtime_error);
 }
 
 TEST(throwingNoExceptions, constructors)
@@ -57,10 +57,10 @@ TEST(throwingNoExceptions, constructors)
 
 TEST(throwingNoExceptions, highestCommonDivisor)
 {
-    EXPECT_NO_THROW(Fraction::greatestCommonDivisor(1, 0));
-    EXPECT_NO_THROW(Fraction::greatestCommonDivisor(0, 1));
-    EXPECT_NO_THROW(Fraction::greatestCommonDivisor(1, 1));
-    EXPECT_NO_THROW(Fraction::greatestCommonDivisor(6, 8));
+    EXPECT_NO_THROW(Fraction::getGreatestCommonDivisor(1, 0));
+    EXPECT_NO_THROW(Fraction::getGreatestCommonDivisor(0, 1));
+    EXPECT_NO_THROW(Fraction::getGreatestCommonDivisor(1, 1));
+    EXPECT_NO_THROW(Fraction::getGreatestCommonDivisor(6, 8));
 }
 
 TEST(throwingNoExceptions, setTheDenominator)
@@ -73,88 +73,88 @@ TEST(throwingNoExceptions, setTheDenominator)
 
 TEST(checkFractionFormat, checkStringIsDecimal)
 {
-    EXPECT_GT(Fraction::checkDecimalString("1.5"), static_cast<int>(DecimalString::NULL_INDEX));
-    EXPECT_GT(Fraction::checkDecimalString("-1.5"), static_cast<int>(DecimalString::NULL_INDEX));
+    EXPECT_GT(Fraction::parseDecimalString("1.5"), static_cast<int>(Fraction::DecimalStringIndexes::NIL));
+    EXPECT_GT(Fraction::parseDecimalString("-1.5"), static_cast<int>(Fraction::DecimalStringIndexes::NIL));
 }
 
 TEST(checkFractionFormat, checkStringIsInteger)
 {
-    EXPECT_EQ(static_cast<int>(DecimalString::NO_DECIMAL_INDEX), Fraction::checkDecimalString("1"));
-    EXPECT_EQ(static_cast<int>(DecimalString::NO_DECIMAL_INDEX), Fraction::checkDecimalString("-1"));
+    EXPECT_EQ(static_cast<int>(Fraction::DecimalStringIndexes::INTEGER), Fraction::parseDecimalString("1"));
+    EXPECT_EQ(static_cast<int>(Fraction::DecimalStringIndexes::INTEGER), Fraction::parseDecimalString("-1"));
 }
 
 TEST(checkFractionFormat, checkDecimalNotFraction)
 {
-    EXPECT_EQ(static_cast<int>(FractionString::ERROR_INDEX), Fraction::checkFractionString("1.5"));
-    EXPECT_EQ(static_cast<int>(FractionString::ERROR_INDEX), Fraction::checkFractionString("-1.5"));
+    EXPECT_EQ(static_cast<int>(Fraction::FractionStringIndexes::ERROR), Fraction::parseFractionString("1.5"));
+    EXPECT_EQ(static_cast<int>(Fraction::FractionStringIndexes::ERROR), Fraction::parseFractionString("-1.5"));
 }
 
 TEST(checkFractionFormat, checkIntegerNotFraction)
 {
-    EXPECT_EQ(static_cast<int>(FractionString::ERROR_INDEX), Fraction::checkFractionString("1"));
-    EXPECT_EQ(static_cast<int>(FractionString::ERROR_INDEX), Fraction::checkFractionString("-1"));
+    EXPECT_EQ(static_cast<int>(Fraction::FractionStringIndexes::ERROR), Fraction::parseFractionString("1"));
+    EXPECT_EQ(static_cast<int>(Fraction::FractionStringIndexes::ERROR), Fraction::parseFractionString("-1"));
 }
 
 TEST(checkFractionFormat, checkFractionStringIsCorrect)
 {
-    EXPECT_GT(Fraction::checkFractionString("1/5"), static_cast<int>(FractionString::NULL_INDEX));
-    EXPECT_GT(Fraction::checkFractionString("-1/5"), static_cast<int>(FractionString::NULL_INDEX));
-    EXPECT_GT(Fraction::checkFractionString("-1/-5"), static_cast<int>(FractionString::NULL_INDEX));
-    EXPECT_GT(Fraction::checkFractionString("1/-5"), static_cast<int>(FractionString::NULL_INDEX));
+    EXPECT_GT(Fraction::parseFractionString("1/5"), static_cast<int>(Fraction::FractionStringIndexes::NIL));
+    EXPECT_GT(Fraction::parseFractionString("-1/5"), static_cast<int>(Fraction::FractionStringIndexes::NIL));
+    EXPECT_GT(Fraction::parseFractionString("-1/-5"), static_cast<int>(Fraction::FractionStringIndexes::NIL));
+    EXPECT_GT(Fraction::parseFractionString("1/-5"), static_cast<int>(Fraction::FractionStringIndexes::NIL));
 }
 
 TEST(checkFractionFormat, checkFractionNotDecimal)
 {
-    EXPECT_EQ(Fraction::checkDecimalString("1/5"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("-1/5"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("-1/-5"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("1/-5"), static_cast<int>(FractionString::ERROR_INDEX));
+    EXPECT_EQ(Fraction::parseDecimalString("1/5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseDecimalString("-1/5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseDecimalString("-1/-5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseDecimalString("1/-5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
 }
 
 TEST(checkFractionFormat, checkFormatIsIncorrect)
 {
     // check fraction format is incorrect for these strings
-    EXPECT_EQ(Fraction::checkFractionString(".15"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("15."), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("-.15"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString(".-15"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("-15."), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("-1.5.6"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("1.5 -"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("-1-6.5"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("1a.5"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("1 / 1.5"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("1-/5"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("1/5-"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("-/15"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("/15"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("15/"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("1/--5"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("1a.5"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("1/-"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("1/1.5"), static_cast<int>(FractionString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkFractionString("1/5/6"), static_cast<int>(FractionString::ERROR_INDEX));
+    EXPECT_EQ(Fraction::parseFractionString(".15"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("15."), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("-.15"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString(".-15"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("-15."), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("-1.5.6"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("1.5 -"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("-1-6.5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("1a.5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("1 / 1.5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("1-/5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("1/5-"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("-/15"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("/15"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("15/"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("1/--5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("1a.5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("1/-"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("1/1.5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseFractionString("1/5/6"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
     // then check the decimal format is incorrect for these strings too
-    EXPECT_EQ(Fraction::checkDecimalString(".15"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("15."), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("-.15"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString(".-15"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("-15."), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("-1.5.6"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("1.5 -"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("-1-6.5"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("1a.5"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("1 / 1.5"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("1-/5"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("1/5-"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("-/15"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("/15"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("15/"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("1/--5"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("1a.5"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("1/-"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("1/1.5"), static_cast<int>(DecimalString::ERROR_INDEX));
-    EXPECT_EQ(Fraction::checkDecimalString("1/5/6"), static_cast<int>(DecimalString::ERROR_INDEX));
+    EXPECT_EQ(Fraction::parseDecimalString(".15"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("15."), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("-.15"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString(".-15"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("-15."), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("-1.5.6"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("1.5 -"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("-1-6.5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("1a.5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("1 / 1.5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("1-/5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("1/5-"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("-/15"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("/15"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("15/"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("1/--5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("1a.5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("1/-"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("1/1.5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    EXPECT_EQ(Fraction::parseDecimalString("1/5/6"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
 }
 
 /* Test the normalize() function */
@@ -167,48 +167,48 @@ TEST(normalizeFunction, twoFractions)
     double decimalReferenceSum = static_cast<double>(7) / 10;
     EXPECT_EQ(sum.getNumerator(), 7);
     EXPECT_EQ(sum.getDenominator(), 10);
-    EXPECT_EQ(sum.getDecimal(), decimalReferenceSum);
+    EXPECT_EQ(sum.getDecimalValue(), decimalReferenceSum);
     Fraction diff{ a - b };
     double decimalReferenceDiff = static_cast<double>(1) / 10;
     EXPECT_EQ(diff.getNumerator(), 1);
     EXPECT_EQ(diff.getDenominator(), 10);
-    EXPECT_EQ(diff.getDecimal(), decimalReferenceDiff);
+    EXPECT_EQ(diff.getDecimalValue(), decimalReferenceDiff);
     Fraction prod{ a*b };
     double decimalReferenceProd = static_cast<double>(3) / 25;
     EXPECT_EQ(prod.getNumerator(), 3);
     EXPECT_EQ(prod.getDenominator(), 25);
-    EXPECT_EQ(prod.getDecimal(), decimalReferenceProd);
+    EXPECT_EQ(prod.getDecimalValue(), decimalReferenceProd);
     Fraction div{ a / b };
     double decimalReferenceDiv = static_cast<double>(4) / 3;
     EXPECT_EQ(div.getNumerator(), 4);
     EXPECT_EQ(div.getDenominator(), 3);
-    EXPECT_EQ(div.getDecimal(), decimalReferenceDiv);
+    EXPECT_EQ(div.getDecimalValue(), decimalReferenceDiv);
 }
 
 /* Test that the greatest common divisor is correctly calculated */
 
 TEST(greatestCommonDivisor, correctOutput)
 {
-    EXPECT_EQ(Fraction::greatestCommonDivisor(27, 18), 9);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(-27, 18), 9);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(27, -18), 9);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(-27, -18), 9);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(18, 27), 9);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(18, -27), 9);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(-18, 27), 9);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(-18, -27), 9);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(0, 2), 2);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(2, 0), 2);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(0, -2), 2);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(-2, 0), 2);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(1, 1), 1);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(-1, 1), 1);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(1, -1), 1);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(-1, -1), 1);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(10, 10), 10);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(-10, 10), 10);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(10, -10), 10);
-    EXPECT_EQ(Fraction::greatestCommonDivisor(-10, -10), 10);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(27, 18), 9);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(-27, 18), 9);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(27, -18), 9);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(-27, -18), 9);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(18, 27), 9);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(18, -27), 9);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(-18, 27), 9);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(-18, -27), 9);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(0, 2), 2);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(2, 0), 2);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(0, -2), 2);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(-2, 0), 2);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(1, 1), 1);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(-1, 1), 1);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(1, -1), 1);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(-1, -1), 1);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(10, 10), 10);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(-10, 10), 10);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(10, -10), 10);
+    EXPECT_EQ(Fraction::getGreatestCommonDivisor(-10, -10), 10);
 }
 
 /* Test the constructors */
@@ -219,7 +219,7 @@ TEST(constructors, defaultConstructor)
     double decimal{ 0.0 };
     EXPECT_EQ(0, fract.getNumerator());
     EXPECT_EQ(1, fract.getDenominator());
-    EXPECT_EQ(decimal, fract.getDecimal());
+    EXPECT_EQ(decimal, fract.getDecimalValue());
 }
 
 TEST(constructors, numConstructor)
@@ -228,12 +228,12 @@ TEST(constructors, numConstructor)
     double decimal1{ 3.0 };
     EXPECT_EQ(3, fract1.getNumerator());
     EXPECT_EQ(1, fract1.getDenominator());
-    EXPECT_EQ(decimal1, fract1.getDecimal());
+    EXPECT_EQ(decimal1, fract1.getDecimalValue());
     Fraction fract2{ -3 };
     double decimal2{ -3.0 };
     EXPECT_EQ(-3, fract2.getNumerator());
     EXPECT_EQ(1, fract2.getDenominator());
-    EXPECT_EQ(decimal2, fract2.getDecimal());
+    EXPECT_EQ(decimal2, fract2.getDecimalValue());
 }
 
 TEST(constructors, numDenConstructor)
@@ -242,22 +242,22 @@ TEST(constructors, numDenConstructor)
     double decimal1{ static_cast<double>(4) / 5 };
     EXPECT_EQ(4, fract1.getNumerator());
     EXPECT_EQ(5, fract1.getDenominator());
-    EXPECT_EQ(decimal1, fract1.getDecimal());
+    EXPECT_EQ(decimal1, fract1.getDecimalValue());
     Fraction fract2{ -8, 10 };
     double decimal2{ static_cast<double>(-4) / 5 };
     EXPECT_EQ(-4, fract2.getNumerator());
     EXPECT_EQ(5, fract2.getDenominator());
-    EXPECT_EQ(decimal2, fract2.getDecimal());
+    EXPECT_EQ(decimal2, fract2.getDecimalValue());
     Fraction fract3{ 8, -10 };
     double decimal3{ static_cast<double>(-4) / 5 };
     EXPECT_EQ(-4, fract3.getNumerator());
     EXPECT_EQ(5, fract3.getDenominator());
-    EXPECT_EQ(decimal3, fract3.getDecimal());
+    EXPECT_EQ(decimal3, fract3.getDecimalValue());
     Fraction fract4{ -8, -10 };
     double decimal4{ static_cast<double>(4) / 5 };
     EXPECT_EQ(4, fract4.getNumerator());
     EXPECT_EQ(5, fract4.getDenominator());
-    EXPECT_EQ(decimal4, fract4.getDecimal());
+    EXPECT_EQ(decimal4, fract4.getDecimalValue());
 }
 
 TEST(constructors, stringConstructorFractionary)
@@ -266,22 +266,22 @@ TEST(constructors, stringConstructorFractionary)
     double decimal1{ static_cast<double>(2) / 3 };
     EXPECT_EQ(2, fract1.getNumerator());
     EXPECT_EQ(3, fract1.getDenominator());
-    EXPECT_EQ(decimal1, fract1.getDecimal());
+    EXPECT_EQ(decimal1, fract1.getDecimalValue());
     Fraction fract2{ "-4/6" };
     double decimal2{ static_cast<double>(-2) / 3 };
     EXPECT_EQ(-2, fract2.getNumerator());
     EXPECT_EQ(3, fract2.getDenominator());
-    EXPECT_EQ(decimal2, fract2.getDecimal());
+    EXPECT_EQ(decimal2, fract2.getDecimalValue());
     Fraction fract3{ "4/-6" };
     double decimal3{ static_cast<double>(-2) / 3 };
     EXPECT_EQ(-2, fract3.getNumerator());
     EXPECT_EQ(3, fract3.getDenominator());
-    EXPECT_EQ(decimal3, fract3.getDecimal());
+    EXPECT_EQ(decimal3, fract3.getDecimalValue());
     Fraction fract4{ "-4/-6" };
     double decimal4{ static_cast<double>(2) / 3 };
     EXPECT_EQ(2, fract4.getNumerator());
     EXPECT_EQ(3, fract4.getDenominator());
-    EXPECT_EQ(decimal4, fract4.getDecimal());
+    EXPECT_EQ(decimal4, fract4.getDecimalValue());
 }
 
 TEST(constructors, stringConstructorInteger)
@@ -290,12 +290,12 @@ TEST(constructors, stringConstructorInteger)
     double decimal1{ 8.0 };
     EXPECT_EQ(8, fract1.getNumerator());
     EXPECT_EQ(1, fract1.getDenominator());
-    EXPECT_EQ(decimal1, fract1.getDecimal());
+    EXPECT_EQ(decimal1, fract1.getDecimalValue());
     Fraction fract2{ "-8" };
     double decimal2{ -8.0 };
     EXPECT_EQ(-8, fract2.getNumerator());
     EXPECT_EQ(1, fract2.getDenominator());
-    EXPECT_EQ(decimal2, fract2.getDecimal());
+    EXPECT_EQ(decimal2, fract2.getDecimalValue());
 }
 
 TEST(constructors, stringConstructorDecimal)
@@ -304,12 +304,12 @@ TEST(constructors, stringConstructorDecimal)
     double decimal1{ 2.5 };
     EXPECT_EQ(5, fract1.getNumerator());
     EXPECT_EQ(2, fract1.getDenominator());
-    EXPECT_EQ(decimal1, fract1.getDecimal());
+    EXPECT_EQ(decimal1, fract1.getDecimalValue());
     Fraction fract2{ "-2.5" };
     double decimal2{ -2.5 };
     EXPECT_EQ(-5, fract2.getNumerator());
     EXPECT_EQ(2, fract2.getDenominator());
-    EXPECT_EQ(decimal2, fract2.getDecimal());
+    EXPECT_EQ(decimal2, fract2.getDecimalValue());
 }
 
 /* Test the equivalent fractions concept */
@@ -370,7 +370,7 @@ TEST(fractionGetters, numerator)
     Fraction fract(2, 4);
     EXPECT_EQ(1, fract.getNumerator());
     EXPECT_EQ(2, fract.getDenominator());
-    EXPECT_EQ(0.5, fract.getDecimal());
+    EXPECT_EQ(0.5, fract.getDecimalValue());
 }
 
 TEST(fractionSetters, numeratorSetup)
@@ -379,7 +379,7 @@ TEST(fractionSetters, numeratorSetup)
     fract.setNumerator(3);
     double decimalReference = static_cast<double>(3) / 2;
     EXPECT_EQ(fract, "3/2");
-    EXPECT_EQ(fract.getDecimal(), decimalReference);
+    EXPECT_EQ(fract.getDecimalValue(), decimalReference);
 }
 
 TEST(fractionSetters, denominatorSetup)
@@ -388,13 +388,13 @@ TEST(fractionSetters, denominatorSetup)
     fract.setDenominator(3);
     double decimalReference = static_cast<double>(1) / 3;
     EXPECT_EQ(fract, "1/3");
-    EXPECT_EQ(fract.getDecimal(), decimalReference);
+    EXPECT_EQ(fract.getDecimalValue(), decimalReference);
 }
 
 TEST(fractionSetters, decimalSetup)
 {
     Fraction fract{ 1, 2 };
-    fract.setDecimal(1.2);
+    fract.setDecimalValue(1.2);
     EXPECT_EQ(fract, "6/5");
 }
 
@@ -559,9 +559,9 @@ TEST(unaryOperators, plusPlus)
     Fraction fract4{ fract1++ };
     ++fract2;
     EXPECT_EQ(fract2, fract3);
-    EXPECT_EQ(fract2.getDecimal(), fract3.getDecimal());
+    EXPECT_EQ(fract2.getDecimalValue(), fract3.getDecimalValue());
     EXPECT_EQ(fract4, fract3);
-    EXPECT_EQ(fract4.getDecimal(), fract3.getDecimal());
+    EXPECT_EQ(fract4.getDecimalValue(), fract3.getDecimalValue());
     EXPECT_EQ(fract1, "1/2");
 }
 
@@ -573,9 +573,9 @@ TEST(unaryOperators, minusMinus)
     Fraction fract4{ fract1-- };
     --fract2;
     EXPECT_EQ(fract2, fract3);
-    EXPECT_EQ(fract2.getDecimal(), fract3.getDecimal());
+    EXPECT_EQ(fract2.getDecimalValue(), fract3.getDecimalValue());
     EXPECT_EQ(fract4, fract3);
-    EXPECT_EQ(fract4.getDecimal(), fract3.getDecimal());
+    EXPECT_EQ(fract4.getDecimalValue(), fract3.getDecimalValue());
     EXPECT_EQ(fract1, "5/2");
 }
 
