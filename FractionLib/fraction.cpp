@@ -61,49 +61,49 @@ Fraction::Fraction(int numerator, int denominator)
 Fraction::Fraction(const std::string& fractionString)
     : Fraction{}
 {
-    const int slashIndex{Fraction::parseFractionString(fractionString)};
+    int separatorIndex;
+    NumericStringType status{parseNumericString(fractionString, separatorIndex)};
 
-    /* Two main scenarios:
-       - string is not in fraction format, check if decimal/integer
-       - string is in fraction format
-    */
-    if (static_cast<int>(FractionStringIndexes::ERROR) == slashIndex)
-	{
-        const int decimalIndex{Fraction::parseDecimalString(fractionString)};
-
-        switch (decimalIndex)
-		{
-        case static_cast<int>(DecimalStringIndexes::INVALID):
-            throw std::runtime_error{"Error! Wrong fraction format"};
-            break;
-        case static_cast<int>(DecimalStringIndexes::INTEGER):
-            mNumerator = std::stoi(fractionString);
-            mDecimalValue = static_cast<double>(mNumerator);
-			break;
-        default:
-            int numberOfDecimals{ static_cast<int>(fractionString.length()) - 1 - decimalIndex };
-
-            for (int currentDecimal{ 0 }; currentDecimal < numberOfDecimals; ++currentDecimal)
-			{
-                mDenominator *= scDigitMultiplier;
-			}
-
-            mNumerator = static_cast<int>(std::stod(fractionString) * mDenominator);
-			normalize();
-		}
-	}
-    else
-	{
-        mDenominator = std::stoi(fractionString.substr(slashIndex + 1, fractionString.length() - slashIndex - 1));
-
-        if (!mDenominator)
-		{
+    switch(status)
+    {
+    case NumericStringType::FRACTION:
+    {
+        mDenominator = std::stoi(fractionString.substr(separatorIndex + 1, fractionString.length() - separatorIndex - 1));
+        if (0 != mDenominator)
+        {
+            mNumerator = std::stoi(fractionString.substr(0, separatorIndex));
+            normalize();
+        }
+        else
+        {
             throw std::runtime_error{ "Fatal error! Division by 0." };
-		}
+        }
+    }
+        break;
+    case NumericStringType::DECIMAL:
+    {
+        int numberOfDecimals{ static_cast<int>(fractionString.length()) - 1 - separatorIndex };
 
-        mNumerator = std::stoi(fractionString.substr(0, slashIndex));
-		normalize();
-	}
+        for (int currentDecimal{ 0 }; currentDecimal < numberOfDecimals; ++currentDecimal)
+        {
+            mDenominator *= scDigitMultiplier;
+        }
+
+        mNumerator = static_cast<int>(std::stod(fractionString) * mDenominator);
+        normalize();
+    }
+        break;
+    case NumericStringType::INTEGER:
+        mNumerator = std::stoi(fractionString);
+        mDecimalValue = static_cast<double>(mNumerator);
+        break;
+    case NumericStringType::INVALID:
+        throw std::runtime_error{"Error! Wrong fraction format"};
+        break;
+    default:
+        assert(false);
+        break;
+    }
 }
 
 Fraction& Fraction::operator=(int fractionString)
@@ -664,66 +664,95 @@ Fraction Fraction::inverse() const
     return result;
 }
 
-/* Check that the string has the right FRACTION format
-   - no non-numeric characters other than '-' and '/'
-   - maximum one '/' character and this one correctly placed: there should be minimum one numeric digit before and one numeric digit after it
-   - maximum two '-' characters and these ones correctly placed: first one in the first position and second one right after slash (if slash exists)
+/* Parses a numeric string that can be in one of the three accepted formats: (integer) fraction, decimal, integer
+   (decimal fraction or scientific formats are excluded)
 */
-int Fraction::parseFractionString(const std::string& fractionString)
+Fraction::NumericStringType Fraction::parseNumericString(const std::string& numericString, int& separatorIndex)
 {
-    int slashIndex{static_cast<int>(fractionString.find_first_of('/'))};
+    NumericStringType numericStringType{NumericStringType::INVALID};
+    NumericStringParsingState currentState{NumericStringParsingState::NO_CHARS};
+    char separator{'\0'};
 
-    const auto cMinusCharsCount{std::count(fractionString.cbegin(), fractionString.cend(), '-')};
-    const auto cSlashCharsCount{std::count(fractionString.cbegin(), fractionString.cend(), '/')};
-    const auto cNonDigitCharsCount{std::count_if(fractionString.cbegin(), fractionString.cend(), [](int character) {return !isdigit(character);})};
+    separatorIndex = -1; // assume integer or invalid
 
-    const size_t cFractionStringSize{fractionString.size()};
-
-    const bool cInvalidNonDigitCharsCount{(cSlashCharsCount != 1) || (cMinusCharsCount > 2) || (cNonDigitCharsCount > cSlashCharsCount + cMinusCharsCount)};
-    const bool cInvalidSlashPosition{(0 == slashIndex) || ( '-' == fractionString[0] && 1 == slashIndex) || (cFractionStringSize - 1 == static_cast<size_t>(slashIndex))};
-    const bool cInvalidMinusPosition{((1 == cMinusCharsCount) && ( '-' !=  fractionString[0] && '-' != fractionString[slashIndex + 1] )) ||
-                                     ((2 == cMinusCharsCount) && ( '-' != fractionString[0] || '-' != fractionString[slashIndex + 1] )) ||
-                                     ('-' == fractionString[cFractionStringSize - 1])};
-
-    if (cInvalidNonDigitCharsCount || cInvalidSlashPosition || cInvalidMinusPosition)
+    for(std::string::const_iterator it{numericString.cbegin()};  it != numericString.cend(); ++it)
     {
-        slashIndex = static_cast<int>(FractionStringIndexes::ERROR);
+        switch(currentState)
+        {
+        case NumericStringParsingState::NO_CHARS:
+            currentState = ('-' == *it || '+' == *it) ? NumericStringParsingState::FIRST_SIGN
+                                                      : (0 != isdigit(*it)) ? NumericStringParsingState::DIGITS_BEFORE_SEPARATOR
+                                                                            : NumericStringParsingState::INVALID;
+            break;
+        case NumericStringParsingState::FIRST_SIGN:
+            currentState = isdigit(*it) ? NumericStringParsingState::DIGITS_BEFORE_SEPARATOR : NumericStringParsingState::INVALID;
+            break;
+        case NumericStringParsingState::DIGITS_BEFORE_SEPARATOR:
+            if ('/' == *it)
+            {
+                currentState = NumericStringParsingState::FRACTION_SEPARATOR;
+                separatorIndex = std::distance(numericString.cbegin(), it);
+                separator = *it;
+            }
+            else if ('.' == *it)
+            {
+                currentState = NumericStringParsingState::DECIMAL_SEPARATOR;
+                separatorIndex = std::distance(numericString.cbegin(), it);
+                separator = *it;
+            }
+            else if (0 == isdigit(*it))
+            {
+                currentState = NumericStringParsingState::INVALID;
+            }
+            break;
+        case NumericStringParsingState::FRACTION_SEPARATOR:
+            currentState = ('-' == *it || '+' == *it) ? NumericStringParsingState::SECOND_SIGN
+                                                      : isdigit(*it) ? NumericStringParsingState::DIGITS_AFTER_SEPARATOR
+                                                                            : NumericStringParsingState::INVALID;
+            break;
+        case NumericStringParsingState::DECIMAL_SEPARATOR:
+            currentState = isdigit(*it) ? NumericStringParsingState::DIGITS_AFTER_SEPARATOR : NumericStringParsingState::INVALID;
+            break;
+        case NumericStringParsingState::SECOND_SIGN:
+            currentState = isdigit(*it) ? NumericStringParsingState::DIGITS_AFTER_SEPARATOR : NumericStringParsingState::INVALID;
+            break;
+        case NumericStringParsingState::DIGITS_AFTER_SEPARATOR:
+            if (!isdigit(*it))
+            {
+                currentState = NumericStringParsingState::INVALID;
+            }
+            break;
+        default:
+            break;
+        }
+
+        if (NumericStringParsingState::INVALID == currentState)
+        {
+            break;
+        }
     }
 
-    return slashIndex;
-}
+    if (NumericStringParsingState::DIGITS_AFTER_SEPARATOR == currentState)
+    {
+        if ('/' == separator)
+        {
+            numericStringType = NumericStringType::FRACTION;
+        }
+        else if ('.' == separator)
+        {
+            numericStringType = NumericStringType::DECIMAL;
+        }
+        else
+        {
+            assert(false);
+        }
+    }
+    else if (NumericStringParsingState::DIGITS_BEFORE_SEPARATOR == currentState)
+    {
+        numericStringType = NumericStringType::INTEGER;
+    }
 
-/* Check that the string has the right DECIMAL format
-   - no non-numeric characters other than '-' and '.'
-   - maximum one '.' character and this one correctly placed: there should be minimum one numeric digit before and one numeric digit after it
-   - maximum one '-' character and this one correctly placed: should be in the first position
-*/
-int Fraction::parseDecimalString(const std::string& decimalString)
-{
-    // starting assumption: string is an integer
-    int decimalIndex{static_cast<int>(DecimalStringIndexes::INTEGER)};
-
-    const auto cDotCharsCount{std::count(decimalString.begin(), decimalString.end(), '.')};
-    const auto cMinusCharsCount{std::count(decimalString.begin(), decimalString.end(), '-')};
-    const auto cNonDigitCharsCount{std::count_if(decimalString.cbegin(), decimalString.cend(), [](int character) {return !isdigit(character);})};
-
-    const size_t cDecimalStringSize{decimalString.size()};
-
-    const bool cInvalidNonDigitCharsCount{(cDotCharsCount > 1) || (cMinusCharsCount > 1) || (cNonDigitCharsCount > cDotCharsCount + cMinusCharsCount)};
-    const bool cInvalidDotPosition{('.' == decimalString[0]) || (1 == cMinusCharsCount && '.' == decimalString[1]) || '.' == decimalString[cDecimalStringSize - 1]};
-    const bool cInvalidMinusPosition{(1 == cMinusCharsCount && '-' != decimalString[0])};
-
-    if (cInvalidNonDigitCharsCount || cInvalidDotPosition || cInvalidMinusPosition)
-	{
-        decimalIndex = static_cast<int>(DecimalStringIndexes::INVALID);
-	}
-
-    if (static_cast<int>(DecimalStringIndexes::INVALID) != decimalIndex && 1 == cDotCharsCount)
-	{
-        decimalIndex = decimalString.find_first_of('.');
-	}
-
-    return decimalIndex;
+    return numericStringType;
 }
 
 int Fraction::getGreatestCommonDivisor(int first, int second)

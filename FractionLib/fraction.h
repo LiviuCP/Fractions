@@ -8,17 +8,12 @@
 class Fraction
 {
 public:
-    enum class DecimalStringIndexes
+    enum class NumericStringType : unsigned short
     {
-        INVALID = -2,
-        INTEGER = -1, // integer string, still valid
-        NIL = 0 // just checking the string is "pure" decimal (index of the dot should be greater than 0)
-    };
-
-    enum class FractionStringIndexes
-    {
-        ERROR = -2, // same error index for consistency to decimal string
-        NIL = 0 // just for validity checking (index of the slash should be greater than 0)
+        FRACTION = 0,
+        DECIMAL,
+        INTEGER,
+        INVALID
     };
 
     // constructors
@@ -148,11 +143,22 @@ public:
     Fraction inverse() const;
 
     // static helper functions
-    static int parseFractionString(const std::string& fractionString);
-    static int parseDecimalString(const std::string& decimalString);
+    static NumericStringType parseNumericString(const std::string& numericString, int& separatorIndex);
     static int getGreatestCommonDivisor(int first, int second);
 
 private:
+    enum class NumericStringParsingState: unsigned short
+    {
+        NO_CHARS = 0,
+        FIRST_SIGN,
+        DIGITS_BEFORE_SEPARATOR,
+        FRACTION_SEPARATOR,
+        DECIMAL_SEPARATOR,
+        SECOND_SIGN,
+        DIGITS_AFTER_SEPARATOR,
+        INVALID
+    };
+
     enum class Sign : short
     {
         Minus = -1,

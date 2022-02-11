@@ -73,88 +73,54 @@ TEST(throwingNoExceptions, setTheDenominator)
 
 TEST(checkFractionFormat, checkStringIsDecimal)
 {
-    EXPECT_GT(Fraction::parseDecimalString("1.5"), static_cast<int>(Fraction::DecimalStringIndexes::NIL));
-    EXPECT_GT(Fraction::parseDecimalString("-1.5"), static_cast<int>(Fraction::DecimalStringIndexes::NIL));
+    int separatorIndex;
+
+    EXPECT_EQ(Fraction::parseNumericString("1.5", separatorIndex), Fraction::NumericStringType::DECIMAL);
+    EXPECT_EQ(Fraction::parseNumericString("-1.5", separatorIndex), Fraction::NumericStringType::DECIMAL);
 }
 
 TEST(checkFractionFormat, checkStringIsInteger)
 {
-    EXPECT_EQ(static_cast<int>(Fraction::DecimalStringIndexes::INTEGER), Fraction::parseDecimalString("1"));
-    EXPECT_EQ(static_cast<int>(Fraction::DecimalStringIndexes::INTEGER), Fraction::parseDecimalString("-1"));
+    int separatorIndex;
+
+    EXPECT_EQ(Fraction::parseNumericString("1", separatorIndex), Fraction::NumericStringType::INTEGER);
+    EXPECT_EQ(Fraction::parseNumericString("-1", separatorIndex), Fraction::NumericStringType::INTEGER);
 }
 
-TEST(checkFractionFormat, checkDecimalNotFraction)
+TEST(checkFractionFormat, checkStringIsFraction)
 {
-    EXPECT_EQ(static_cast<int>(Fraction::FractionStringIndexes::ERROR), Fraction::parseFractionString("1.5"));
-    EXPECT_EQ(static_cast<int>(Fraction::FractionStringIndexes::ERROR), Fraction::parseFractionString("-1.5"));
-}
+    int separatorIndex;
 
-TEST(checkFractionFormat, checkIntegerNotFraction)
-{
-    EXPECT_EQ(static_cast<int>(Fraction::FractionStringIndexes::ERROR), Fraction::parseFractionString("1"));
-    EXPECT_EQ(static_cast<int>(Fraction::FractionStringIndexes::ERROR), Fraction::parseFractionString("-1"));
-}
-
-TEST(checkFractionFormat, checkFractionStringIsCorrect)
-{
-    EXPECT_GT(Fraction::parseFractionString("1/5"), static_cast<int>(Fraction::FractionStringIndexes::NIL));
-    EXPECT_GT(Fraction::parseFractionString("-1/5"), static_cast<int>(Fraction::FractionStringIndexes::NIL));
-    EXPECT_GT(Fraction::parseFractionString("-1/-5"), static_cast<int>(Fraction::FractionStringIndexes::NIL));
-    EXPECT_GT(Fraction::parseFractionString("1/-5"), static_cast<int>(Fraction::FractionStringIndexes::NIL));
-}
-
-TEST(checkFractionFormat, checkFractionNotDecimal)
-{
-    EXPECT_EQ(Fraction::parseDecimalString("1/5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseDecimalString("-1/5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseDecimalString("-1/-5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseDecimalString("1/-5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
+    EXPECT_EQ(Fraction::parseNumericString("1/5", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("-1/5", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("-1/-5", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("1/-5", separatorIndex), Fraction::NumericStringType::FRACTION);
 }
 
 TEST(checkFractionFormat, checkFormatIsIncorrect)
 {
-    // check fraction format is incorrect for these strings
-    EXPECT_EQ(Fraction::parseFractionString(".15"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("15."), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("-.15"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString(".-15"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("-15."), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("-1.5.6"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("1.5 -"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("-1-6.5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("1a.5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("1 / 1.5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("1-/5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("1/5-"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("-/15"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("/15"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("15/"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("1/--5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("1a.5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("1/-"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("1/1.5"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    EXPECT_EQ(Fraction::parseFractionString("1/5/6"), static_cast<int>(Fraction::FractionStringIndexes::ERROR));
-    // then check the decimal format is incorrect for these strings too
-    EXPECT_EQ(Fraction::parseDecimalString(".15"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("15."), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("-.15"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString(".-15"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("-15."), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("-1.5.6"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("1.5 -"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("-1-6.5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("1a.5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("1 / 1.5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("1-/5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("1/5-"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("-/15"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("/15"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("15/"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("1/--5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("1a.5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("1/-"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("1/1.5"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
-    EXPECT_EQ(Fraction::parseDecimalString("1/5/6"), static_cast<int>(Fraction::DecimalStringIndexes::INVALID));
+    int separatorIndex;
+
+    EXPECT_EQ(Fraction::parseNumericString(".15", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("15.", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("-.15", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString(".-15", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("-15.", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("-1.5.6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1.5 -", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("-1-6.5", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1a.5", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1 / 1.5", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1-/5", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1/5-", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("-/15", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("/15", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("15/", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1/--5", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1a.5", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1/-", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1/1.5", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1/5/6", separatorIndex), Fraction::NumericStringType::INVALID);
 }
 
 /* Test the normalize() function */
