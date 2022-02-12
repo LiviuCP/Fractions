@@ -75,16 +75,22 @@ TEST(checkFractionFormat, checkStringIsDecimal)
 {
     int separatorIndex;
 
+    EXPECT_EQ(Fraction::parseNumericString("4.0", separatorIndex), Fraction::NumericStringType::DECIMAL);
     EXPECT_EQ(Fraction::parseNumericString("1.5", separatorIndex), Fraction::NumericStringType::DECIMAL);
+    EXPECT_EQ(Fraction::parseNumericString("0.0", separatorIndex), Fraction::NumericStringType::DECIMAL);
     EXPECT_EQ(Fraction::parseNumericString("-1.5", separatorIndex), Fraction::NumericStringType::DECIMAL);
+    EXPECT_EQ(Fraction::parseNumericString("-4.0", separatorIndex), Fraction::NumericStringType::DECIMAL);
 }
 
 TEST(checkFractionFormat, checkStringIsInteger)
 {
     int separatorIndex;
 
+    EXPECT_EQ(Fraction::parseNumericString("5", separatorIndex), Fraction::NumericStringType::INTEGER);
     EXPECT_EQ(Fraction::parseNumericString("1", separatorIndex), Fraction::NumericStringType::INTEGER);
+    EXPECT_EQ(Fraction::parseNumericString("0", separatorIndex), Fraction::NumericStringType::INTEGER);
     EXPECT_EQ(Fraction::parseNumericString("-1", separatorIndex), Fraction::NumericStringType::INTEGER);
+    EXPECT_EQ(Fraction::parseNumericString("-5", separatorIndex), Fraction::NumericStringType::INTEGER);
 }
 
 TEST(checkFractionFormat, checkStringIsFraction)
@@ -95,6 +101,35 @@ TEST(checkFractionFormat, checkStringIsFraction)
     EXPECT_EQ(Fraction::parseNumericString("-1/5", separatorIndex), Fraction::NumericStringType::FRACTION);
     EXPECT_EQ(Fraction::parseNumericString("-1/-5", separatorIndex), Fraction::NumericStringType::FRACTION);
     EXPECT_EQ(Fraction::parseNumericString("1/-5", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("+1/+5", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("-1/+5", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("+1/-5", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("1/+5", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("+1/5", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("6/3", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("-6/3", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("-6/-3", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("6/-3", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("+6/+3", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("-6/+3", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("+6/-3", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("6/+3", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("+6/3", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("0/11", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("-0/11", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("-0/-11", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("0/-11", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("+0/+11", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("-0/+11", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("+0/-11", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("0/+11", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("+0/11", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("1/1", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("2/-2", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("+3/+3", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("-4/+3", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("+8/6", separatorIndex), Fraction::NumericStringType::FRACTION);
+    EXPECT_EQ(Fraction::parseNumericString("-16/-12", separatorIndex), Fraction::NumericStringType::FRACTION);
 }
 
 TEST(checkFractionFormat, checkFormatIsIncorrect)
@@ -111,16 +146,31 @@ TEST(checkFractionFormat, checkFormatIsIncorrect)
     EXPECT_EQ(Fraction::parseNumericString("-1-6.5", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("1a.5", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("1 / 1.5", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1/ 5", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("1-/5", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("1/5-", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("-/15", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("/15", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("15/", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("1/--5", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1/+-5", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("-+1/5", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("-1/++5", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("1a.5", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("1/-", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("1/1.5", separatorIndex), Fraction::NumericStringType::INVALID);
     EXPECT_EQ(Fraction::parseNumericString("1/5/6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1/1.6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1.5/6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1.5/1.6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("-1/1.6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1.5/-6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("-1.5/-1.6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("+1/+1.6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("+1.5/6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("1.5/+1.6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("-1/+1.6", separatorIndex), Fraction::NumericStringType::INVALID);
+    EXPECT_EQ(Fraction::parseNumericString("+1.5/-6", separatorIndex), Fraction::NumericStringType::INVALID);
 }
 
 /* Test the normalize() function */
