@@ -298,6 +298,18 @@ TEST(constructors, stringConstructorFractionary)
     EXPECT_EQ(2, fract4.getNumerator());
     EXPECT_EQ(3, fract4.getDenominator());
     EXPECT_EQ(decimal4, fract4.getDecimalValue());
+
+    // bonus: test the "+" sign too
+    Fraction fract5{ "4/+6" };
+    double decimal5{ static_cast<double>(2) / 3 };
+    EXPECT_EQ(2, fract5.getNumerator());
+    EXPECT_EQ(3, fract5.getDenominator());
+    EXPECT_EQ(decimal5, fract5.getDecimalValue());
+    Fraction fract6{ "+4/-6" };
+    double decimal6{ static_cast<double>(-2) / 3 };
+    EXPECT_EQ(-2, fract6.getNumerator());
+    EXPECT_EQ(3, fract6.getDenominator());
+    EXPECT_EQ(decimal6, fract6.getDecimalValue());
 }
 
 TEST(constructors, stringConstructorInteger)
@@ -312,6 +324,13 @@ TEST(constructors, stringConstructorInteger)
     EXPECT_EQ(-8, fract2.getNumerator());
     EXPECT_EQ(1, fract2.getDenominator());
     EXPECT_EQ(decimal2, fract2.getDecimalValue());
+
+    // bonus: test the "+" sign too
+    Fraction fract3{ "+8" };
+    double decimal3{ 8.0 };
+    EXPECT_EQ(8, fract3.getNumerator());
+    EXPECT_EQ(1, fract3.getDenominator());
+    EXPECT_EQ(decimal3, fract3.getDecimalValue());
 }
 
 TEST(constructors, stringConstructorDecimal)
@@ -326,6 +345,13 @@ TEST(constructors, stringConstructorDecimal)
     EXPECT_EQ(-5, fract2.getNumerator());
     EXPECT_EQ(2, fract2.getDenominator());
     EXPECT_EQ(decimal2, fract2.getDecimalValue());
+
+    // bonus: test the "+" sign too
+    Fraction fract3{ "+2.5" };
+    double decimal3{ 2.5 };
+    EXPECT_EQ(5, fract3.getNumerator());
+    EXPECT_EQ(2, fract3.getDenominator());
+    EXPECT_EQ(decimal3, fract3.getDecimalValue());
 }
 
 /* Test the equivalent fractions concept */
