@@ -90,41 +90,11 @@ public:
 	Fraction operator--(int);
 
     // logical operators
-    bool operator<(const Fraction& fraction) const;
-    bool operator<(const std::string& fractionString) const;
-    friend bool operator<(const std::string& fractionString, const Fraction& fraction);
-    bool operator<(const char* fractionString) const;
-    friend bool operator<(const char* fractionString, const Fraction& fraction);
-
-    bool operator<=(const Fraction& fraction) const;
-    bool operator<=(const std::string& fractionString) const;
-    friend bool operator<=(const std::string& fractionString, const Fraction& fraction);
-    bool operator<=(const char* fractionString) const;
-    friend bool operator<=(const char* fractionString, const Fraction& fraction);
-
-    bool operator>(const Fraction& fraction) const;
-    bool operator>(const std::string& fractionString) const;
-    friend bool operator>(const std::string& fractionString, const Fraction& fraction);
-    bool operator>(const char* fractionString) const;
-    friend bool operator>(const char* fractionString, const Fraction& fraction);
-
-    bool operator>=(const Fraction& fraction) const;
-    bool operator>=(const std::string& fractionString) const;
-    friend bool operator>=(const std::string& fractionString, const Fraction& fraction);
-    bool operator>=(const char* fractionString) const;
-    friend bool operator>=(const char* fractionString, const Fraction& fraction);
+    std::strong_ordering operator<=>(const Fraction& fraction) const;
+    std::strong_ordering operator<=>(const std::string& fractionString) const;
 
     bool operator==(const Fraction& fraction) const;
     bool operator==(const std::string& fractionString) const;
-    friend bool operator==(const std::string& fractionString, const Fraction& fraction);
-    bool operator==(const char* fractionString) const;
-    friend bool operator==(const char* fractionString, const Fraction& fraction);
-
-    bool operator!=(const Fraction& fraction) const;
-    bool operator!=(const std::string& fractionString) const;
-    friend bool operator!=(const std::string& fractionString, const Fraction& fraction);
-    bool operator!=(const char* fractionString) const;
-    friend bool operator!=(const char* fractionString, const Fraction& fraction);
 
     operator bool() const;
 
@@ -171,11 +141,7 @@ private:
     Fraction multiply(const Fraction& fraction) const;
     Fraction divide(const Fraction& fraction) const;
 
-    bool isLessThan(const Fraction& fraction) const;
-    bool isGreaterThan(const Fraction& fraction) const;
-    bool isEqualTo(const Fraction& fraction) const;
-
-	int mNumerator;
+    int mNumerator;
 	int mDenominator;
     double mDecimalValue;
 };

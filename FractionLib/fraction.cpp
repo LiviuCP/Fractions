@@ -414,184 +414,24 @@ Fraction Fraction::operator--(int)
     return fract;
 }
 
-bool Fraction::operator<(const Fraction& fraction) const
+std::strong_ordering Fraction::operator<=>(const Fraction& fraction) const
 {
-    const bool cIsLessThan{isLessThan(fraction)};
-    return cIsLessThan;
+    return mNumerator * fraction.mDenominator <=> fraction.mNumerator * mDenominator;
 }
 
-bool Fraction::operator<(const std::string& fractionString) const
+std::strong_ordering Fraction::operator<=>(const std::string& fractionString) const
 {
-    const bool cIsLessThan{isLessThan(Fraction{fractionString})};
-    return cIsLessThan;
-}
-
-bool operator<(const std::string& fractionString, const Fraction& fraction)
-{
-    const bool cIsLessThan{Fraction{fractionString}.isLessThan(fraction)};
-    return cIsLessThan;
-}
-
-bool Fraction::operator<(const char* fractionString) const
-{
-    const bool cIsLessThan{isLessThan(Fraction{fractionString})};
-    return cIsLessThan;
-}
-
-bool operator<(const char* fractionString, const Fraction& fraction)
-{
-    const bool cIsLessThan{Fraction{fractionString}.isLessThan(fraction)};
-    return cIsLessThan;
-}
-
-bool Fraction::operator<=(const Fraction& fraction) const
-{
-    const bool cIsLessThanOrEqual{!isGreaterThan(fraction)};
-    return cIsLessThanOrEqual;
-}
-
-bool Fraction::operator<=(const std::string& fractionString) const
-{
-    const bool cIsLessThanOrEqual{!isGreaterThan(Fraction{fractionString})};
-    return cIsLessThanOrEqual;
-}
-
-bool operator<=(const std::string& fractionString, const Fraction& fraction)
-{
-    const bool cIsLessThanOrEqual{!Fraction{fractionString}.isGreaterThan(fraction)};
-    return cIsLessThanOrEqual;
-}
-
-bool Fraction::operator<=(const char* fractionString) const
-{
-    const bool cIsLessThanOrEqual{!isGreaterThan(Fraction{fractionString})};
-    return cIsLessThanOrEqual;
-}
-
-bool operator<=(const char* fractionString, const Fraction& fraction)
-{
-    const bool cIsLessThanOrEqual{!Fraction{fractionString}.isGreaterThan(fraction)};
-    return cIsLessThanOrEqual;
-}
-
-bool Fraction::operator>(const Fraction& fraction) const
-{
-    const bool cIsGreaterThan{isGreaterThan(fraction)};
-    return cIsGreaterThan;
-}
-
-bool Fraction::operator>(const std::string& fractionString) const
-{
-    const bool cIsGreaterThan{isGreaterThan(Fraction{fractionString})};
-    return cIsGreaterThan;
-}
-
-bool operator>(const std::string& fractionString, const Fraction& fraction)
-{
-    const bool cIsGreaterThan{Fraction{fractionString}.isGreaterThan(fraction)};
-    return cIsGreaterThan;
-}
-
-bool Fraction::operator>(const char* fractionString) const
-{
-    const bool cIsGreaterThan{isGreaterThan(Fraction{fractionString})};
-    return cIsGreaterThan;
-}
-
-bool operator>(const char* fractionString, const Fraction& fraction)
-{
-    const bool cIsGreaterThan{Fraction{fractionString}.isGreaterThan(fraction)};
-    return cIsGreaterThan;
-}
-
-bool Fraction::operator>=(const Fraction& fraction) const
-{
-    const bool cIsGreaterThanOrEqual{!isLessThan(fraction)};
-    return cIsGreaterThanOrEqual;
-}
-
-bool Fraction::operator>=(const std::string& fractionString) const
-{
-    const bool cIsGreaterThanOrEqual{!isLessThan(Fraction{fractionString})};
-    return cIsGreaterThanOrEqual;
-}
-
-bool operator>=(const std::string& fractionString, const Fraction& fraction)
-{
-    const bool cIsGreaterThanOrEqual{!Fraction{fractionString}.isLessThan(fraction)};
-    return cIsGreaterThanOrEqual;
-}
-
-bool Fraction::operator>=(const char* fractionString) const
-{
-    const bool cIsGreaterThanOrEqual{!isLessThan(Fraction{fractionString})};
-    return cIsGreaterThanOrEqual;
-}
-
-bool operator>=(const char* fractionString, const Fraction& fraction)
-{
-    const bool cIsGreaterThanOrEqual{!Fraction{fractionString}.isLessThan(fraction)};
-    return cIsGreaterThanOrEqual;
+    return *this <=> Fraction{fractionString};
 }
 
 bool Fraction::operator==(const Fraction& fraction) const
 {
-    const bool cIsEqualTo(isEqualTo(fraction));
-    return cIsEqualTo;
+    return mNumerator * fraction.mDenominator == fraction.mNumerator * mDenominator;
 }
 
 bool Fraction::operator==(const std::string& fractionString) const
 {
-    const bool cIsEqualTo(isEqualTo(Fraction{fractionString}));
-    return cIsEqualTo;
-}
-
-bool operator==(const std::string& fractionString, const Fraction& fraction)
-{
-    const bool cIsEqualTo(Fraction{fractionString}.isEqualTo(fraction));
-    return cIsEqualTo;
-}
-
-bool Fraction::operator==(const char* fractionString) const
-{
-    const bool cIsEqualTo(isEqualTo(Fraction{fractionString}));
-    return cIsEqualTo;
-}
-
-bool operator==(const char* fractionString, const Fraction& fraction)
-{
-    const bool cIsEqualTo(Fraction{fractionString}.isEqualTo(fraction));
-    return cIsEqualTo;
-}
-
-bool Fraction::operator!=(const Fraction& fraction) const
-{
-    const bool cIsDifferentFrom{!isEqualTo(fraction)};
-    return cIsDifferentFrom;
-}
-
-bool Fraction::operator!=(const std::string& fractionString) const
-{
-    const bool cIsDifferentFrom{!isEqualTo(Fraction{fractionString})};
-    return cIsDifferentFrom;
-}
-
-bool operator!=(const std::string& fractionString, const Fraction& fraction)
-{
-    const bool cIsDifferentFrom{!Fraction{fractionString}.isEqualTo(fraction)};
-    return cIsDifferentFrom;
-}
-
-bool Fraction::operator!=(const char* fractionString) const
-{
-    const bool cIsDifferentFrom{!isEqualTo(Fraction{fractionString})};
-    return cIsDifferentFrom;
-}
-
-bool operator!=(const char* fractionString, const Fraction& fraction)
-{
-    const bool cIsDifferentFrom{!Fraction{fractionString}.isEqualTo(fraction)};
-    return cIsDifferentFrom;
+    return *this == Fraction{fractionString};
 }
 
 Fraction::operator bool() const
@@ -842,31 +682,4 @@ Fraction Fraction::divide(const Fraction& fraction) const
     const Fraction cResult{cResultingNumerator, cResultingDenominator};
 
     return cResult;
-}
-
-bool Fraction::isLessThan(const Fraction& fraction) const
-{
-    const int cLeftNormalizedNumerator{mNumerator * fraction.mDenominator};
-    const int cRightNormalizedNumerator{fraction.mNumerator * mDenominator};
-    const bool cIsLessThan{cLeftNormalizedNumerator < cRightNormalizedNumerator};
-
-    return cIsLessThan;
-}
-
-bool Fraction::isGreaterThan(const Fraction& fraction) const
-{
-    const int cLeftNormalizedNumerator{mNumerator * fraction.mDenominator};
-    const int cRightNormalizedNumerator{fraction.mNumerator * mDenominator};
-    const bool cIsGreaterThan{cLeftNormalizedNumerator > cRightNormalizedNumerator};
-
-    return cIsGreaterThan;
-}
-
-bool Fraction::isEqualTo(const Fraction& fraction) const
-{
-    const int cLeftNormalizedNumerator{mNumerator * fraction.mDenominator};
-    const int cRightNormalizedNumerator{fraction.mNumerator * mDenominator};
-    const bool cIsEqualTo{cLeftNormalizedNumerator == cRightNormalizedNumerator};
-
-    return cIsEqualTo;
 }
